@@ -1,66 +1,138 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronRight } from "lucide-react"
-
-const organizationTabs = [
-  { id: "hien-mau", label: "Hội Hiền Mẫu" },
-  { id: "gia-truong", label: "Hội Gia Trưởng" },
-  { id: "caritas", label: "Hội Caritas" },
-  { id: "legio", label: "Hội Legio" },
-  { id: "muc-vu", label: "Hội Đồng Mục Vụ" },
-  { id: "anna", label: "Hội Anna" },
-]
-
-const organizationNews = [
-  {
-    id: 1,
-    title: "THÔNG BÁO: Khai giảng Lớp Giáo lý Hôn nhân Dự tòng – Khóa 1 năm 2025",
-    excerpt:
-      "Giáo xứ Ngọc Mạch xin thông báo về việc mở lớp giáo lý Hôn nhân – Dự tòng khóa 1 năm 2025...",
-    image: "/images/org-1.jpg",
-    org: "hien-mau",
-  },
-  {
-    id: 2,
-    title: "CA ĐOÀN TÊ-RÊ-SA GIÁO XỨ NGỌC MẠCH - Mời gọi Chung tay phục vụ Thiên Chúa",
-    excerpt:
-      "Kính thưa cộng đoàn, Trong ý cầu nguyện của Đức Giáo Hoàng dành cho tháng Mân Côi năm nay...",
-    image: "/images/org-2.jpg",
-    org: "gia-truong",
-  },
-  {
-    id: 3,
-    title: "Giáo xứ Ngọc Mạch: Thánh lễ đặt viên đá đầu tiên",
-    excerpt:
-      "Vào lúc 18h30, thứ Hai, ngày 23/9/2024, Giáo xứ Ngọc Mạch long trọng tổ chức Thánh lễ làm phép viên đá...",
-    image: "/images/org-3.jpg",
-    org: "caritas",
-  },
-  {
-    id: 4,
-    title: "Thư ngỏ – Mời gọi tham gia Ca đoàn Thánh gia Giáo xứ Ngọc Mạch",
-    image: "/images/org-4.jpg",
-    org: "legio",
-  },
-  {
-    id: 5,
-    title: "Ca đoàn Têrêsa Giáo xứ Ngọc Mạch mừng kính lễ Quan Thầy",
-    image: "/images/org-5.jpg",
-    org: "muc-vu",
-  },
-  {
-    id: 6,
-    title: "Mừng Kính Lễ Thánh Giuse Thợ – Bổn mạng Hội Gia trưởng Giáo xứ Ngọc Mạch",
-    image: "/images/org-6.jpg",
-    org: "anna",
-  },
-]
+import postService from "@/services/post.services"
+import menuService from "@/services/menu.services"
+import { baseUrl } from "@/services"
 
 export function OrganizationsSection() {
-  const [activeTab, setActiveTab] = useState("hien-mau")
+  const [organizationTabs, setOrganizationTabs] = useState<Array<{ id: string; label: string }>>([])
+  const [activeTab, setActiveTab] = useState<string>("")
+  const [organizationNews, setOrganizationNews] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [menuSlug, setMenuSlug] = useState<string>("doan-the")
+
+  // Lấy danh sách categories từ menu "doan-the"
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // Lấy tất cả menus
+        const menusData = await menuService().getMenus();
+        const menus = menusData.data || [];
+        
+        // Tìm menu "doan-the" hoặc menu có tên chứa "đoàn thể"
+        const doanTheMenu = menus.find((menu: any) => 
+          menu.slug === "doan-the" || 
+          menu.slug === "doan-the" ||
+          menu.name?.toLowerCase().includes("đoàn thể") ||
+          menu.name?.toLowerCase().includes("doan the")
+        );
+        
+        if (doanTheMenu) {
+          setMenuSlug(doanTheMenu.slug);
+          
+          // Lấy categories từ menu này
+          const categories = doanTheMenu.category || [];
+          
+          // Filter chỉ lấy category active và sort theo name
+          const sortedCategories = categories
+            .filter((category: any) => category.isActive === true)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name, 'vi'))
+            .map((category: any) => ({
+              id: category.slug,
+              label: category.name
+            }));
+          
+          setOrganizationTabs(sortedCategories);
+          
+          // Set tab đầu tiên làm activeTab mặc định
+          if (sortedCategories.length > 0 && !activeTab) {
+            setActiveTab(sortedCategories[0].id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Lấy bài viết khi activeTab thay đổi
+  useEffect(() => {
+    if (!activeTab) return;
+
+    const fetchNews = async () => {
+      try {
+        setLoading(true)
+        // Lấy bài viết từ category tương ứng với tab (tối đa 6 bài)
+        const postsData = await postService().getPosts(undefined, activeTab);
+        let allPosts = postsData.data || [];
+        
+        // Sắp xếp lại theo thời gian đăng (mới nhất trước)
+        allPosts = allPosts.sort((a: any, b: any) => {
+          const dateA = a.postingDate ? new Date(a.postingDate).getTime() : new Date(a.createdAt).getTime();
+          const dateB = b.postingDate ? new Date(b.postingDate).getTime() : new Date(b.createdAt).getTime();
+          return dateB - dateA; // Giảm dần (mới nhất trước)
+        });
+        
+        // Lấy tối đa 6 bài
+        const posts = allPosts.slice(0, 6);
+        
+        const formattedPosts = posts.map((post: any) => {
+          // Lấy URL của backgroundImage
+          let backgroundImageUrl = null;
+          
+          if (post.backgroundImage) {
+            if (post.backgroundImage.url) {
+              backgroundImageUrl = post.backgroundImage.url;
+            } else if (post.backgroundImage.data?.attributes?.url) {
+              backgroundImageUrl = post.backgroundImage.data.attributes.url;
+            } else if (post.backgroundImage.data?.url) {
+              backgroundImageUrl = post.backgroundImage.data.url;
+            }
+          }
+          
+          // Nếu URL là relative path, thêm baseUrl
+          if (backgroundImageUrl && !backgroundImageUrl.startsWith('http') && !backgroundImageUrl.startsWith('//')) {
+            if (!backgroundImageUrl.startsWith('/')) {
+              backgroundImageUrl = `/${backgroundImageUrl}`;
+            }
+            backgroundImageUrl = `${baseUrl}${backgroundImageUrl}`;
+          }
+          
+          // Lấy menu và category slug để tạo đường dẫn
+          const postMenuSlug = post.menu_item?.menu?.slug || menuSlug;
+          const categorySlug = post.menu_item?.slug || activeTab;
+          
+          // Tạo excerpt từ content (loại bỏ HTML tags)
+          const excerpt = post.content 
+            ? post.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
+            : '';
+          
+          return {
+            id: post.id,
+            title: post.title,
+            excerpt: excerpt,
+            image: backgroundImageUrl || "/images/org-1.jpg",
+            href: `/menu/${postMenuSlug}/${categorySlug}/${post.slug}`
+          };
+        });
+        
+        setOrganizationNews(formattedPosts);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching organization news:", error);
+        setOrganizationNews([]);
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, [activeTab, menuSlug]);
 
   const mainNews = organizationNews.slice(0, 3)
   const sideNews = organizationNews.slice(3, 6)
@@ -91,7 +163,7 @@ export function OrganizationsSection() {
             </div>
           </div>
           <Link
-            href="/doan-the"
+            href={menuSlug ? `/menu/${menuSlug}` : "/doan-the"}
             className="flex items-center text-sm text-primary hover:text-primary/80 font-medium"
           >
             Xem tất cả
@@ -100,60 +172,70 @@ export function OrganizationsSection() {
         </div>
 
         {/* Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Articles */}
-          <div className="lg:col-span-2 space-y-4">
-            {mainNews.map((item) => (
-              <Link
-                key={item.id}
-                href={`/doan-the/${item.id}`}
-                className="flex gap-4 bg-card p-4 rounded-lg hover:shadow-md transition-shadow group"
-              >
-                <div className="relative w-32 h-24 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-                  <Image
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Đang tải...</p>
+          </div>
+        ) : organizationNews.length === 0 ? (
+          <div className="text-center py-12 bg-card rounded-lg border border-border/50">
+            <p className="text-muted-foreground text-lg">Không có bài viết nào</p>
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Main Articles */}
+            <div className="lg:col-span-2 space-y-4">
+              {mainNews.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="flex gap-4 bg-card p-4 rounded-lg hover:shadow-md transition-shadow group"
+                >
+                  <div className="relative w-32 h-24 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                    <Image
+                      src={item.image || "/placeholder.svg"}
+                      alt={item.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                      {item.title}
+                    </h4>
+                    {item.excerpt && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                        {item.excerpt}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Side News */}
+            <div className="space-y-3">
+              {sideNews.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="flex gap-3 p-3 bg-card rounded-lg hover:shadow-md transition-shadow group"
+                >
+                  <div className="relative w-20 h-16 flex-shrink-0 rounded overflow-hidden bg-muted">
+                    <Image
+                      src={item.image || "/placeholder.svg"}
+                      alt={item.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <h4 className="flex-1 font-medium text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
                     {item.title}
                   </h4>
-                  {item.excerpt && (
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                      {item.excerpt}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
-
-          {/* Side News */}
-          <div className="space-y-3">
-            {sideNews.map((item) => (
-              <Link
-                key={item.id}
-                href={`/doan-the/${item.id}`}
-                className="flex gap-3 p-3 bg-card rounded-lg hover:shadow-md transition-shadow group"
-              >
-                <div className="relative w-20 h-16 flex-shrink-0 rounded overflow-hidden bg-muted">
-                  <Image
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <h4 className="flex-1 font-medium text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                  {item.title}
-                </h4>
-              </Link>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </section>
   )

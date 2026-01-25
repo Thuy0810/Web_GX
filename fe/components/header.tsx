@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Menu, X, ChevronDown, Search, Facebook, Youtube } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,74 +10,137 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-const menuItems = [
-  { label: "Trang chủ", href: "/" },
-  {
-    label: "Tin tức",
-    href: "/tin-tuc",
-    submenu: [
-      { label: "Sinh hoạt/ Hoạt động", href: "/sinh-hoat" },
-      { label: "Thông báo", href: "/thong-bao" },
-    ],
-  },
-  {
-    label: "Đoàn thể",
-    href: "/doan-the",
-    submenu: [
-      { label: "Ca Đoàn Magis", href: "/ca-doan-magis" },
-      { label: "Ca Đoàn Têrêsa", href: "/ca-doan-teresa" },
-      { label: "Ca Đoàn Thánh Gia", href: "/ca-doan-thanh-gia" },
-      { label: "Hội Anna", href: "/hoi-anna" },
-      { label: "Hội Caritas", href: "/hoi-caritas" },
-      { label: "Hội Đồng Mục Vụ", href: "/hoi-dong-muc-vu" },
-      { label: "Hội Gia Trưởng", href: "/hoi-gia-truong" },
-      { label: "Hội Hiền Mẫu", href: "/hoi-hien-mau" },
-      { label: "Hội Legio", href: "/hoi-legio" },
-      { label: "Thiếu Nhi", href: "/thieu-nhi" },
-    ],
-  },
-  {
-    label: "Đào tạo",
-    href: "/dao-tao",
-    submenu: [
-      { label: "Cầu nguyện với Lời Chúa", href: "/cau-nguyen" },
-      { label: "Giáo lý Hôn Nhân & Dự tòng", href: "/giao-ly-hon-nhan" },
-      { label: "Giáo lý Thiếu Nhi", href: "/giao-ly-thieu-nhi" },
-      { label: "Lớp Tiếng Anh", href: "/lop-tieng-anh" },
-    ],
-  },
-  {
-    label: "Bài viết/Suy niệm",
-    href: "/bai-viet",
-    submenu: [
-      { label: "Suy niệm", href: "/suy-niem" },
-      { label: "Suy tư", href: "/suy-tu" },
-      { label: "Chuyên mục", href: "/chuyen-muc" },
-    ],
-  },
-  {
-    label: "Tư liệu",
-    href: "/tu-lieu",
-    submenu: [
-      { label: "Hình ảnh", href: "/hinh-anh" },
-      { label: "Video", href: "/video" },
-      { label: "Các biểu mẫu hành chính", href: "/bieu-mau" },
-    ],
-  },
-  {
-    label: "Giới Thiệu",
-    href: "/gioi-thieu",
-    submenu: [
-      { label: "Giáo Xứ", href: "/giao-xu" },
-      { label: "Các Giáo Họ", href: "/giao-ho" },
-      { label: "Liên Hệ", href: "/lien-he" },
-    ],
-  },
-]
+import menuService from "@/services/menu.services"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [menuItems, setMenuItems] = useState<any[]>([])
+  const [expandedMenuItems, setExpandedMenuItems] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const menusData = await menuService().getMenus();
+        
+        // Tách menu "Trang chủ" từ API (nếu có)
+        const allMenus = menusData.data || [];
+        const homeMenu = allMenus.find((menu: any) => {
+          const nameLower = menu.name?.toLowerCase() || '';
+          const slugLower = menu.slug?.toLowerCase() || '';
+          return nameLower === 'trang chủ' || 
+                 nameLower === 'trang chu' || 
+                 slugLower === 'trang-chu' ||
+                 menu.slug === '' ||
+                 menu.slug === null;
+        });
+
+        // Các menu khác (không phải Trang chủ)
+        const otherMenus = allMenus.filter((menu: any) => {
+          const nameLower = menu.name?.toLowerCase() || '';
+          const slugLower = menu.slug?.toLowerCase() || '';
+          // Loại bỏ menu Trang chủ
+          const isHomeMenu = nameLower === 'trang chủ' || 
+                           nameLower === 'trang chu' || 
+                           slugLower === 'trang-chu' ||
+                           menu.slug === '' ||
+                           menu.slug === null;
+          return !isHomeMenu && menu.slug !== '' && menu.slug !== null;
+        });
+
+        // Sort menus theo order (nếu có), nếu không có order thì sort theo name
+        const sortedMenus = otherMenus.sort((a: any, b: any) => {
+          if (a.order !== undefined && b.order !== undefined) {
+            return a.order - b.order;
+          }
+          if (a.order !== undefined) return -1;
+          if (b.order !== undefined) return 1;
+          return a.name.localeCompare(b.name, 'vi');
+        });
+
+        // Loại bỏ menu trùng lặp dựa trên slug
+        const uniqueMenus = sortedMenus.filter((menu: any, index: number, self: any[]) => 
+          index === self.findIndex((m: any) => m.slug === menu.slug)
+        );
+
+        const formattedMenus = uniqueMenus.map((menu: any) => {
+          // Kiểm tra nếu là menu "Liên hệ" thì link đến trang liên hệ riêng và không có submenu
+          const menuNameLower = menu.name?.toLowerCase() || '';
+          const menuSlugLower = menu.slug?.toLowerCase() || '';
+          const isContactMenu = menuNameLower.includes('liên hệ') || 
+                               menuNameLower.includes('lien he') ||
+                               menuSlugLower === 'lien-he' ||
+                               menuSlugLower === 'lienhe';
+          
+          // Nếu là menu liên hệ, không có submenu và link đến /lien-he
+          if (isContactMenu) {
+            return {
+              label: menu.name,
+              href: '/lien-he',
+              submenu: []
+            };
+          }
+
+          // Lấy category từ bảng Category (relation oneToMany từ Menu)
+          // Category có: name, slug, isActive, menu (relation), posts (relation)
+          const categories = menu.category || [];
+         
+          // Filter chỉ lấy category active và sort theo name
+          const sortedCategories = categories
+            .filter((category: any) => category.isActive === true)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name, 'vi'))
+            .map((category: any) => ({
+              label: category.name, // Từ trường name của bảng Category
+              href: `/menu/${menu.slug}/${category.slug}`, // Từ trường slug của bảng Category
+            }));
+
+          return {
+            label: menu.name,
+            href: `/menu/${menu.slug}`,
+            submenu: sortedCategories // Category từ bảng Category, không phải submenu
+          };
+        });
+
+        // Xử lý menu Trang chủ: ưu tiên từ API, nếu không có thì thêm thủ công
+        let homeMenuItem;
+        if (homeMenu) {
+          // Lấy category từ bảng Category (relation oneToMany từ Menu)
+          const categories = homeMenu.category || [];
+          
+          // Filter chỉ lấy category active và sort theo name
+          const sortedCategories = categories
+            .filter((category: any) => category.isActive === true)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name, 'vi'))
+            .map((category: any) => ({
+              label: category.name, // Từ trường name của bảng Category
+              href: `/menu/${homeMenu.slug}/${category.slug}`, // Từ trường slug của bảng Category
+            }));
+
+          homeMenuItem = {
+            label: homeMenu.name || "Trang chủ",
+            href: "/", // Luôn link đến trang chủ cũ
+            submenu: sortedCategories // Category từ bảng Category
+          };
+        } else {
+          // Thêm thủ công nếu không có trong API
+          homeMenuItem = { label: "Trang chủ", href: "/" };
+        }
+
+        // Đặt Trang chủ ở đầu danh sách
+        setMenuItems([
+          homeMenuItem,
+          ...formattedMenus
+        ]);
+      } catch (error) {
+        console.error("Error fetching menus:", error);
+        // Fallback menu nếu có lỗi
+        setMenuItems([
+          { label: "Trang chủ", href: "/" },
+        ]);
+      }
+    };
+
+    fetchMenus();
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full bg-primary shadow-lg">
@@ -101,7 +164,7 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
             {menuItems.map((item) =>
-              item.submenu ? (
+              item.submenu && item.submenu.length > 0 ? (
                 <DropdownMenu key={item.label}>
                   <div className="flex items-center">
                     <Link
@@ -121,7 +184,7 @@ export function Header() {
                     </DropdownMenuTrigger>
                   </div>
                   <DropdownMenuContent className="bg-white">
-                    {item.submenu.map((subitem) => (
+                    {item.submenu.map((subitem: { label: string; href: string }) => (
                       <DropdownMenuItem key={subitem.label} asChild>
                         <Link href={subitem.href} className="cursor-pointer text-foreground hover:text-primary">
                           {subitem.label}
@@ -185,31 +248,68 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-primary border-t border-white/10">
           <nav className="container mx-auto px-4 py-4">
-            {menuItems.map((item) => (
-              <div key={item.label} className="border-b border-white/10 last:border-0">
-                <Link
-                  href={item.href}
-                  className="block py-3 text-primary-foreground font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-                {item.submenu && (
-                  <div className="pl-4 pb-2">
-                    {item.submenu.map((subitem) => (
+            {menuItems.map((item) => {
+              const hasSubmenu = Array.isArray(item.submenu) && item.submenu.length > 0;
+              const isExpanded = expandedMenuItems.has(item.label);
+              
+              return (
+                <div key={item.label} className="border-b border-white/10 last:border-0">
+                  <div className="flex items-center justify-between">
+                    {hasSubmenu ? (
+                      <>
+                        <span className="flex-1 block py-3 text-primary-foreground font-medium">
+                          {item.label}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setExpandedMenuItems((prev) => {
+                              const newSet = new Set(prev);
+                              if (isExpanded) {
+                                newSet.delete(item.label);
+                              } else {
+                                newSet.add(item.label);
+                              }
+                              return newSet;
+                            });
+                          }}
+                          className="p-2 text-primary-foreground hover:bg-white/10 rounded-md transition-colors"
+                          aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
+                        >
+                          <ChevronDown 
+                            className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+                          />
+                        </button>
+                      </>
+                    ) : (
                       <Link
-                        key={subitem.label}
-                        href={subitem.href}
-                        className="block py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground"
+                        href={item.href}
+                        className="flex-1 block py-3 text-primary-foreground font-medium"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        {subitem.label}
+                        {item.label}
                       </Link>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                  {hasSubmenu && isExpanded && (
+                    <div className="pl-4 pb-2 space-y-1">
+                      {item.submenu.map((subitem: any) => (
+                        <Link
+                          key={subitem.label}
+                          href={subitem.href}
+                          className="block py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {subitem.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
         </div>
       )}

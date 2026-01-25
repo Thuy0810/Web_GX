@@ -4,14 +4,14 @@ import { Facebook, Youtube, Mail, MapPin, Phone } from "lucide-react"
 
 const quickLinks = [
   { label: "Trang chủ", href: "/" },
-  { label: "Tin tức", href: "/tin-tuc" },
-  { label: "Sinh hoạt/ Hoạt động", href: "/sinh-hoat" },
-  { label: "Thông báo", href: "/thong-bao" },
-  { label: "Đoàn thể", href: "/doan-the" },
-  { label: "Đào tạo", href: "/dao-tao" },
-  { label: "Bài viết/Suy niệm", href: "/bai-viet" },
-  { label: "Tư liệu", href: "/tu-lieu" },
-  { label: "Giới Thiệu", href: "/gioi-thieu" },
+  { label: "Tin tức", href: "/menu/tin-tuc" },
+  { label: "Sinh hoạt/ Hoạt động", href: "/menu/sinh-hoat" },
+  { label: "Thông báo", href: "/menu/thong-bao" },
+  { label: "Đoàn thể", href: "/menu/doan-the" },
+  { label: "Đào tạo", href: "/menu/dao-tao" },
+  { label: "Bài viết/Suy niệm", href: "/menu/bai-viet" },
+  { label: "Tư liệu", href: "/menu/tu-lieu" },
+  { label: "Giới Thiệu", href: "/menu/gioi-thieu" },
   { label: "Liên Hệ", href: "/lien-he" },
 ]
 
@@ -28,16 +28,19 @@ const recentPosts = [
     id: 1,
     title: "THÔNG BÁO: Khai giảng Lớp Giáo lý Hôn nhân Dự tòng – Khóa 1 năm 2025",
     image: "/images/recent-1.jpg",
+    slug: "thong-bao-khai-giang-lop-giao-ly-hon-nhan-du-tong-khoa-1-nam-2025",
   },
   {
     id: 2,
     title: "CA ĐOÀN TÊ-RÊ-SA GIÁO XỨ NGỌC MẠCH - Mời gọi Chung tay phục vụ Thiên Chúa",
     image: "/images/recent-2.jpg",
+    slug: "ca-doan-te-resa-giao-xu-ngoc-mach-moi-goi-chung-tay-phuc-vu-thien-chua",
   },
   {
     id: 3,
     title: "Giáo xứ Ngọc Mạch: Thánh lễ đặt viên đá đầu tiên",
     image: "/images/recent-3.jpg",
+    slug: "giao-xu-ngoc-mach-thanh-le-dat-vien-da-dau-tien",
   },
 ]
 
@@ -138,7 +141,7 @@ export function Footer() {
               {recentPosts.map((post) => (
                 <Link
                   key={post.id}
-                  href={`/tin-tuc/${post.id}`}
+                  href={post.href || `/menu/tin-tuc/${post.slug || post.id}`}
                   className="flex gap-3 group"
                 >
                   <div className="relative w-16 h-12 flex-shrink-0 rounded overflow-hidden bg-background/10">

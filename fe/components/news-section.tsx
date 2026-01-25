@@ -1,61 +1,102 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronRight } from "lucide-react"
+import postService from "@/services/post.services"
+import { baseUrl } from "@/services"
 
 const tabs = [
   { id: "thong-bao", label: "Thông báo" },
   { id: "sinh-hoat", label: "Sinh hoạt/ Hoạt động" },
 ]
 
-const newsItems = [
-  {
-    id: 1,
-    title: "THÔNG BÁO: Khai giảng Lớp Giáo lý Hôn nhân Dự tòng – Khóa 1 năm 2025",
-    date: "13/02/2025",
-    excerpt:
-      "Giáo xứ Ngọc Mạch xin thông báo về việc mở lớp giáo lý Hôn nhân – Dự tòng khóa 1 năm 2025 như sau: Thời gian Khai giảng vào ngày 20/02/2025...",
-    image: "/images/news-1.jpg",
-    category: "thong-bao",
-  },
-  {
-    id: 2,
-    title: "CA ĐOÀN TÊ-RÊ-SA GIÁO XỨ NGỌC MẠCH - Mời gọi Chung tay phục vụ Thiên Chúa",
-    date: "14/10/2024",
-    image: "/images/news-2.jpg",
-    category: "thong-bao",
-  },
-  {
-    id: 3,
-    title: "Giáo xứ Ngọc Mạch: Thánh lễ đặt viên đá đầu tiên",
-    date: "24/09/2024",
-    image: "/images/news-3.jpg",
-    category: "sinh-hoat",
-  },
-  {
-    id: 4,
-    title: "Thông báo: Thay đổi giờ Thánh Lễ tại Giáo xứ Ngọc Mạch",
-    date: "26/08/2024",
-    image: "/images/news-4.jpg",
-    category: "thong-bao",
-  },
-  {
-    id: 5,
-    title: "Giáo xứ Ngọc Mạch ra mắt Hội Đồng Mục Vụ nhiệm kỳ 2024-2028",
-    date: "16/08/2024",
-    image: "/images/news-5.jpg",
-    category: "sinh-hoat",
-  },
-]
-
 export function NewsSection() {
   const [activeTab, setActiveTab] = useState("thong-bao")
+  const [newsItems, setNewsItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredNews = newsItems.filter((item) => item.category === activeTab)
-  const mainNews = filteredNews[0]
-  const sideNews = filteredNews.slice(1, 5)
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true)
+        // Lấy bài viết từ category tương ứng với tab (tối đa 7 bài)
+        const postsData = await postService().getPosts(undefined, activeTab);
+        let allPosts = postsData.data || [];
+        console.log(`Total posts from API for ${activeTab}:`, allPosts.length);
+        
+        // Sắp xếp lại theo thời gian đăng (mới nhất trước) để đảm bảo bài mới nhất là main news
+        allPosts = allPosts.sort((a: any, b: any) => {
+          const dateA = a.postingDate ? new Date(a.postingDate).getTime() : new Date(a.createdAt).getTime();
+          const dateB = b.postingDate ? new Date(b.postingDate).getTime() : new Date(b.createdAt).getTime();
+          return dateB - dateA; // Giảm dần (mới nhất trước)
+        });
+        
+        // Lấy tối đa 7 bài (bài mới nhất sẽ là main news)
+        const posts = allPosts.slice(0, 7);
+        
+        const formattedPosts = posts.map((post: any) => {
+          // Lấy URL của backgroundImage
+          let backgroundImageUrl = null;
+          
+          if (post.backgroundImage) {
+            if (post.backgroundImage.url) {
+              backgroundImageUrl = post.backgroundImage.url;
+            } else if (post.backgroundImage.data?.attributes?.url) {
+              backgroundImageUrl = post.backgroundImage.data.attributes.url;
+            } else if (post.backgroundImage.data?.url) {
+              backgroundImageUrl = post.backgroundImage.data.url;
+            }
+          }
+          
+          // Nếu URL là relative path, thêm baseUrl
+          if (backgroundImageUrl && !backgroundImageUrl.startsWith('http') && !backgroundImageUrl.startsWith('//')) {
+            if (!backgroundImageUrl.startsWith('/')) {
+              backgroundImageUrl = `/${backgroundImageUrl}`;
+            }
+            backgroundImageUrl = `${baseUrl}${backgroundImageUrl}`;
+          }
+          
+          // Lấy menu và category slug để tạo đường dẫn
+          const menuSlug = post.menu_item?.menu?.slug || activeTab;
+          const categorySlug = post.menu_item?.slug || activeTab;
+          
+          // Tạo excerpt từ content (loại bỏ HTML tags)
+          const excerpt = post.content 
+            ? post.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
+            : '';
+          
+          // Format date
+          const postDate = post.postingDate 
+            ? new Date(post.postingDate).toLocaleDateString('vi-VN')
+            : new Date(post.createdAt).toLocaleDateString('vi-VN');
+          
+          return {
+            id: post.id,
+            title: post.title,
+            date: postDate,
+            excerpt: excerpt,
+            image: backgroundImageUrl || "/images/news-1.jpg",
+            href: `/menu/${menuSlug}/${categorySlug}/${post.slug}`
+          };
+        });
+        
+        console.log(`Formatted posts:`, formattedPosts.length, formattedPosts);
+        setNewsItems(formattedPosts);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching news:", error);
+        setNewsItems([]);
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, [activeTab]);
+
+  const mainNews = newsItems[0]
+  const sideNews = newsItems.slice(1) // Lấy tất cả bài còn lại, không giới hạn
 
   return (
     <section className="py-10 bg-background">
@@ -83,7 +124,7 @@ export function NewsSection() {
             </div>
           </div>
           <Link
-            href="/tin-tuc"
+            href="/menu/tin-tuc"
             className="flex items-center text-sm text-primary hover:text-primary/80 font-medium"
           >
             Xem tất cả
@@ -92,64 +133,80 @@ export function NewsSection() {
         </div>
 
         {/* News Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main News */}
-          {mainNews && (
-            <Link
-              href={`/tin-tuc/${mainNews.id}`}
-              className="lg:col-span-2 group"
-            >
-              <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-muted">
-                <Image
-                  src={mainNews.image || "/placeholder.svg"}
-                  alt={mainNews.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-secondary transition-colors line-clamp-2">
-                    {mainNews.title}
-                  </h3>
-                  <p className="text-sm text-white/80">{mainNews.date}</p>
-                  {mainNews.excerpt && (
-                    <p className="text-sm text-white/90 mt-2 line-clamp-2 hidden sm:block">
-                      {mainNews.excerpt}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </Link>
-          )}
-
-          {/* Side News */}
-          <div className="space-y-4">
-            {sideNews.map((item) => (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Đang tải...</p>
+          </div>
+        ) : newsItems.length === 0 ? (
+          <div className="text-center py-12 bg-card rounded-lg border border-border/50">
+            <p className="text-muted-foreground text-lg">Không có bài viết nào</p>
+          </div>
+        ) : (
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Main News */}
+            {mainNews && (
               <Link
-                key={item.id}
-                href={`/tin-tuc/${item.id}`}
-                className="flex gap-4 group"
+                href={mainNews.href}
+                className="lg:col-span-2 group"
               >
-                <div className="relative w-24 h-20 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-muted">
                   <Image
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.title}
+                    src={mainNews.image || "/placeholder.svg"}
+                    alt={mainNews.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {item.date}
-                  </p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-secondary transition-colors line-clamp-2">
+                      {mainNews.title}
+                    </h3>
+                    <p className="text-sm text-white/80">{mainNews.date}</p>
+                    {mainNews.excerpt && (
+                      <p className="text-sm text-white/90 mt-2 line-clamp-2 hidden sm:block">
+                        {mainNews.excerpt}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </Link>
-            ))}
+            )}
+
+            {/* Side News */}
+            <div className="space-y-4">
+              {sideNews.length > 0 ? (
+                sideNews.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="flex gap-4 group"
+                  >
+                    <div className="relative w-24 h-20 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                      <Image
+                        src={item.image || "/placeholder.svg"}
+                        alt={item.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {item.date}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="text-center py-4 text-sm text-muted-foreground">
+                  Không có bài viết khác
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   )

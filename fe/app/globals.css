@@ -123,3 +123,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+td tr th {
+  border: 1px solid #000;
+}
+
+/* Căn giữa hình ảnh trong phần content */
+.prose img {
+  display: block !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  border-radius: 0.5rem;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Đảm bảo prose sử dụng cùng phông chữ với hệ thống */
+.prose {
+  font-family: var(--font-sans) !important;
+}
+
+.prose * {
+  font-family: inherit !important;
+}

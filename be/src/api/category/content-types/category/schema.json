@@ -16,16 +16,23 @@
       "type": "string"
     },
     "slug": {
-      "type": "uid"
+      "type": "uid",
+      "targetField": "name"
     },
-    "articles": {
+    "isActive": {
+      "type": "boolean"
+    },
+    "menu": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::menu.menu",
+      "inversedBy": "category"
+    },
+    "posts": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::article.article",
-      "mappedBy": "category"
-    },
-    "description": {
-      "type": "text"
+      "target": "api::post.post",
+      "mappedBy": "menu_item"
     }
   }
 }

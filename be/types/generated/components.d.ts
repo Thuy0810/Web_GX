@@ -43,11 +43,7 @@ export interface SharedSeo extends Struct.ComponentSchema {
     icon: 'allergies';
     name: 'Seo';
   };
-  attributes: {
-    metaDescription: Schema.Attribute.Text & Schema.Attribute.Required;
-    metaTitle: Schema.Attribute.String & Schema.Attribute.Required;
-    shareImage: Schema.Attribute.Media<'images'>;
-  };
+  attributes: {};
 }
 
 export interface SharedSlider extends Struct.ComponentSchema {

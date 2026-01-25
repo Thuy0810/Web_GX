@@ -7,6 +7,7 @@ interface RelatedPost {
     date: string
     excerpt?: string
     image: string
+    href?: string
 }
 
 interface RelatedPostsSectionProps {
@@ -38,7 +39,7 @@ export function RelatedPostsSection({
                             {posts.map((post) => (
                                 <Link
                                     key={post.id}
-                                    href={`${basePath}/${post.id}`}
+                                    href={post.href || `${basePath}/${post.id}`}
                                     className="block group"
                                 >
                                     <div className="bg-card rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-5 flex gap-5 border border-border/50">

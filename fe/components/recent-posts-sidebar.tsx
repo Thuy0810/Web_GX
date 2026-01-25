@@ -5,6 +5,7 @@ interface RecentPost {
     id: number | string
     title: string
     image: string
+    href?: string
 }
 
 interface RecentPostsSidebarProps {
@@ -27,7 +28,7 @@ export function RecentPostsSidebar({
                 {posts.map((post) => (
                     <Link
                         key={post.id}
-                        href={`${basePath}/${post.id}`}
+                        href={post.href || `${basePath}/${post.id}`}
                         className="flex gap-3 group p-2 rounded-lg hover:bg-muted/50 transition-all duration-200"
                     >
                         <div className="relative w-20 h-16 shrink-0 rounded-lg overflow-hidden bg-muted shadow-sm group-hover:shadow-md transition-shadow">
