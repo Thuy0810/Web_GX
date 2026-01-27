@@ -13,6 +13,7 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import postService from "@/services/post.services"
+import globalService from "@/services/global.services"
 import { baseUrl } from "@/services"
 
 export default async function IntroducePage() {
@@ -27,6 +28,18 @@ export default async function IntroducePage() {
         console.error("Error fetching introduce:", error)
         hasError = true
     }
+
+    // Fetch dữ liệu Global từ API
+    let globalData: any = null
+    try {
+        const response = await globalService().getGlobal()
+        globalData = response.data || response || null
+    } catch (error) {
+        console.error("Error fetching global:", error)
+    }
+
+    const siteName = globalData?.siteName || "Giáo họ Tân Định"
+    const diocese = globalData?.diocese || "Giáo phận Vinh"
 
     // Lấy bài viết mới nhất cho sidebar
     const recentPostsData = await postService().getPosts();
@@ -192,7 +205,7 @@ export default async function IntroducePage() {
                             ) : (
                                 <div className="prose prose-sans prose-sm md:prose-base lg:prose-lg max-w-none text-muted-foreground prose-headings:text-foreground prose-headings:font-bold prose-p:leading-relaxed prose-p:mb-6">
                                     <p className="mb-6">
-                                        <strong className="text-foreground">Giáo xứ Ngọc Mạch</strong> là một giáo xứ thuộc Tổng Giáo phận Hà Nội, 
+                                        <strong className="text-foreground">{siteName}</strong> là một giáo họ thuộc {diocese}, 
                                         được thành lập với sứ mệnh loan báo Tin Mừng và phục vụ cộng đồng dân Chúa tại địa phương.
                                     </p>
                                     <p className="mb-6">

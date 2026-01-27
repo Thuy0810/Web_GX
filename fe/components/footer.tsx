@@ -2,48 +2,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { Facebook, Youtube, Mail, MapPin, Phone } from "lucide-react"
 import contactService from "@/services/contact.services"
-
-const quickLinks = [
-  { label: "Trang chủ", href: "/" },
-  { label: "Tin tức", href: "/menu/tin-tuc" },
-  { label: "Sinh hoạt/ Hoạt động", href: "/menu/sinh-hoat" },
-  { label: "Thông báo", href: "/menu/thong-bao" },
-  { label: "Đoàn thể", href: "/menu/doan-the" },
-  { label: "Đào tạo", href: "/menu/dao-tao" },
-  { label: "Bài viết/Suy niệm", href: "/menu/bai-viet" },
-  { label: "Tư liệu", href: "/menu/tu-lieu" },
-  { label: "Giới Thiệu", href: "/menu/gioi-thieu" },
-  { label: "Liên Hệ", href: "/lien-he" },
-]
-
-const externalLinks = [
-  { label: "Tòa Thánh Vatican", href: "https://www.vatican.va" },
-  { label: "Vatican News (Tiếng Việt)", href: "https://www.vaticannews.va/vi.html" },
-  { label: "Hội Đồng Giám Mục Việt Nam", href: "https://hdgmvietnam.com" },
-  { label: "Tổng Giáo Phận Hà Nội", href: "https://tonggiaophanhanoi.org" },
-  { label: "Dòng Tên", href: "https://dongten.net" },
-]
-
-const recentPosts = [
-  {
-    id: 1,
-    title: "THÔNG BÁO: Khai giảng Lớp Giáo lý Hôn nhân Dự tòng – Khóa 1 năm 2025",
-    image: "/images/recent-1.jpg",
-    slug: "thong-bao-khai-giang-lop-giao-ly-hon-nhan-du-tong-khoa-1-nam-2025",
-  },
-  {
-    id: 2,
-    title: "CA ĐOÀN TÊ-RÊ-SA GIÁO XỨ NGỌC MẠCH - Mời gọi Chung tay phục vụ Thiên Chúa",
-    image: "/images/recent-2.jpg",
-    slug: "ca-doan-te-resa-giao-xu-ngoc-mach-moi-goi-chung-tay-phuc-vu-thien-chua",
-  },
-  {
-    id: 3,
-    title: "Giáo xứ Ngọc Mạch: Thánh lễ đặt viên đá đầu tiên",
-    image: "/images/recent-3.jpg",
-    slug: "giao-xu-ngoc-mach-thanh-le-dat-vien-da-dau-tien",
-  },
-]
+import postService from "@/services/post.services"
+import globalService from "@/services/global.services"
+import { baseUrl } from "@/services"
 
 export async function Footer() {
   // Fetch dữ liệu liên hệ từ API
@@ -55,7 +16,52 @@ export async function Footer() {
     console.error("Error fetching contact:", error)
   }
 
-  const address = contactData?.address || "Ngọc Mạch, Hà Nội, Việt Nam"
+  // Fetch dữ liệu Global từ API
+  let globalData: any = null
+  try {
+    const response = await globalService().getGlobal()
+    globalData = response.data || response || null
+  } catch (error) {
+    console.error("Error fetching global:", error)
+  }
+
+  // Fetch 2 bài viết mới nhất từ API
+  let recentPosts: any[] = []
+  try {
+    const postsData = await postService().getPosts()
+    const posts = postsData.data?.slice(0, 2).map((p: any) => {
+      let backgroundImageUrl = null
+      if (p.backgroundImage) {
+        if (p.backgroundImage.url) {
+          backgroundImageUrl = p.backgroundImage.url
+        } else if (p.backgroundImage.data?.attributes?.url) {
+          backgroundImageUrl = p.backgroundImage.data.attributes.url
+        } else if (p.backgroundImage.data?.url) {
+          backgroundImageUrl = p.backgroundImage.data.url
+        }
+      }
+      if (backgroundImageUrl && !backgroundImageUrl.startsWith('http') && !backgroundImageUrl.startsWith('//')) {
+        if (!backgroundImageUrl.startsWith('/')) {
+          backgroundImageUrl = `/${backgroundImageUrl}`
+        }
+        backgroundImageUrl = `${baseUrl}${backgroundImageUrl}`
+      }
+      const menuSlug = p.menu_item?.menu?.slug || 'tin-tuc'
+      const categorySlug = p.menu_item?.slug || ''
+      return {
+        id: p.slug,
+        title: p.title,
+        image: backgroundImageUrl || "/images/news-1.jpg",
+        slug: p.slug,
+        href: categorySlug ? `/menu/${menuSlug}/${categorySlug}/${p.slug}` : `/menu/${menuSlug}/${p.slug}`
+      }
+    }) || []
+    recentPosts = posts
+  } catch (error) {
+    console.error("Error fetching recent posts:", error)
+  }
+
+  const address = contactData?.address || "Tân Định, Hà Nội, Việt Nam"
   const phone = contactData?.phone || "+84 xxx xxx xxx"
   const email = contactData?.email || "contact@giaoxungocmach.org"
   const fb = contactData?.fb || "https://facebook.com"
@@ -64,39 +70,81 @@ export async function Footer() {
   return (
     <footer className="bg-foreground text-background  w-full">
       {/* Main Footer */}
-      <div className="container mx-auto px-4 py-10">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* About */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
+          {/* About & Contact */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-                <span className="text-xl font-bold text-primary-foreground">GX</span>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="relative h-14 w-14 rounded-full bg-primary shadow-lg overflow-hidden">
+                {(() => {
+                  // Xử lý nhiều định dạng response từ Strapi
+                  let faviconUrl = null
+                  const favicon = globalData?.favicon
+                  
+                  if (favicon) {
+                    // Kiểm tra các định dạng khác nhau
+                    if (typeof favicon === 'string') {
+                      faviconUrl = favicon
+                    } else if (favicon?.url) {
+                      faviconUrl = favicon.url
+                    } else if (favicon?.data?.attributes?.url) {
+                      faviconUrl = favicon.data.attributes.url
+                    } else if (favicon?.data?.url) {
+                      faviconUrl = favicon.data.url
+                    } else if (favicon?.attributes?.url) {
+                      faviconUrl = favicon.attributes.url
+                    } else if (favicon?.data) {
+                      // Nếu data là object trực tiếp
+                      faviconUrl = favicon.data.url || favicon.data
+                    }
+                    
+                    // Xử lý URL - nếu là relative path thì thêm baseUrl
+                    if (faviconUrl) {
+                      if (typeof faviconUrl === 'string' && !faviconUrl.startsWith('http') && !faviconUrl.startsWith('//') && !faviconUrl.startsWith('data:')) {
+                        faviconUrl = faviconUrl.startsWith('/') 
+                          ? `${baseUrl}${faviconUrl}` 
+                          : `${baseUrl}/${faviconUrl}`
+                      }
+                    }
+                  }
+                  
+                  // Luôn hiển thị logo, nếu không có từ API thì dùng placeholder
+                  return (
+                    <Image
+                      src={faviconUrl || "/placeholder-logo.png"}
+                      alt={globalData?.siteName || "Logo"}
+                      fill
+                      className="object-cover rounded-full"
+                    />
+                  )
+                })()}
               </div>
               <div>
-                <h3 className="font-bold text-background">Giáo xứ Ngọc Mạch</h3>
-                <p className="text-xs text-background/70">Tổng Giáo phận Hà Nội</p>
+                <h3 className="text-xl font-bold text-background">{globalData?.siteName || "Giáo họ Tân Định"}</h3>
+                <p className="text-sm text-background/70">{globalData?.diocese || "Giáo phận Vinh"}</p>
               </div>
             </div>
-            <div className="space-y-2 text-sm text-background/80">
-              <p className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>{address}</span>
+            <div className="space-y-3 text-sm text-background/80 mb-6">
+              <p className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary" />
+                <span className="leading-relaxed">{address}</span>
               </p>
-              <p className="flex items-center gap-2">
-                <Phone className="h-4 w-4 flex-shrink-0" />
+              <p className="flex items-center gap-3">
+                <Phone className="h-5 w-5 flex-shrink-0 text-primary" />
                 <span>{phone}</span>
               </p>
-              <p className="flex items-center gap-2">
-                <Mail className="h-4 w-4 flex-shrink-0" />
+              <p className="flex items-center gap-3">
+                <Mail className="h-5 w-5 flex-shrink-0 text-primary" />
                 <span>{email}</span>
               </p>
             </div>
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-3">
               {fb && (
                 <Link
                   href={fb}
                   target="_blank"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-background/10 hover:bg-primary transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-background/10 hover:bg-primary transition-all duration-300 hover:scale-110"
+                  aria-label="Facebook"
                 >
                   <Facebook className="h-5 w-5" />
                 </Link>
@@ -105,7 +153,8 @@ export async function Footer() {
                 <Link
                   href={youtube}
                   target="_blank"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-background/10 hover:bg-secondary transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-background/10 hover:bg-secondary transition-all duration-300 hover:scale-110"
+                  aria-label="Youtube"
                 >
                   <Youtube className="h-5 w-5" />
                 </Link>
@@ -113,71 +162,36 @@ export async function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-bold text-background mb-4 border-b border-background/20 pb-2">
-              Liên kết nhanh
-            </h4>
-            <ul className="space-y-2">
-              {quickLinks.slice(0, 8).map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-background/80 hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* External Links */}
-          <div>
-            <h4 className="font-bold text-background mb-4 border-b border-background/20 pb-2">
-              Liên kết website
-            </h4>
-            <ul className="space-y-2">
-              {externalLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    target="_blank"
-                    className="text-sm text-background/80 hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           {/* Recent Posts */}
           <div>
-            <h4 className="font-bold text-background mb-4 border-b border-background/20 pb-2">
+            <h4 className="text-lg font-bold text-background mb-6 pb-3 border-b-2 border-primary/30">
               Bài viết mới
             </h4>
-            <div className="space-y-3">
-              {recentPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  href={post.href || `/menu/tin-tuc/${post.slug || post.id}`}
-                  className="flex gap-3 group"
-                >
-                  <div className="relative w-16 h-12 flex-shrink-0 rounded overflow-hidden bg-background/10">
-                    <Image
-                      src={post.image || "/placeholder.svg"}
-                      alt={post.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <h5 className="flex-1 text-xs text-background/80 group-hover:text-primary transition-colors line-clamp-2">
-                    {post.title}
-                  </h5>
-                </Link>
-              ))}
-            </div>
+            {recentPosts.length > 0 ? (
+              <div className="space-y-4">
+                {recentPosts.map((post) => (
+                  <Link
+                    key={post.id || post.slug}
+                    href={post.href || `/menu/tin-tuc/${post.slug || post.id}`}
+                    className="flex gap-4 group hover:bg-background/5 p-2 rounded-lg transition-all duration-300"
+                  >
+                    <div className="relative w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-background/10 shadow-md group-hover:shadow-lg transition-shadow">
+                      <Image
+                        src={post.image || "/placeholder.svg"}
+                        alt={post.title}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    </div>
+                    <h5 className="flex-1 text-sm text-background/80 group-hover:text-primary transition-colors line-clamp-2 font-medium leading-snug">
+                      {post.title}
+                    </h5>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-background/60">Chưa có bài viết nào.</p>
+            )}
           </div>
         </div>
       </div>
@@ -186,7 +200,7 @@ export async function Footer() {
       <div className="border-t border-background/10">
         <div className="container mx-auto px-4 py-4">
           <p className="text-center text-sm text-background/60">
-            © {new Date().getFullYear()} Giáo xứ Ngọc Mạch. All rights reserved.
+            © {new Date().getFullYear()} {globalData?.siteName || "Giáo họ Tân Định"}. All rights reserved.
           </p>
         </div>
       </div>

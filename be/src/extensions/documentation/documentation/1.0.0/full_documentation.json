@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-01-27T11:32:12.475Z"
+    "x-generation-date": "2026-01-27T12:21:24.834Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -11919,6 +11919,9 @@
               "defaultSeo": {
                 "$ref": "#/components/schemas/SharedSeoComponent"
               },
+              "diocese": {
+                "type": "string"
+              },
               "locale": {
                 "type": "string"
               },
@@ -12812,6 +12815,9 @@
           "defaultSeo": {
             "$ref": "#/components/schemas/SharedSeoComponent"
           },
+          "diocese": {
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -13060,6 +13066,9 @@
                 },
                 "defaultSeo": {
                   "$ref": "#/components/schemas/SharedSeoComponent"
+                },
+                "diocese": {
+                  "type": "string"
                 },
                 "createdAt": {
                   "type": "string",

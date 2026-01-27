@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import contactService from "@/services/contact.services"
+import globalService from "@/services/global.services"
 
 export default async function ContactPage() {
   // Fetch dữ liệu liên hệ từ API
@@ -22,6 +23,15 @@ export default async function ContactPage() {
     console.log('ContactPage - Contact data:', contactData)
   } catch (error) {
     console.error("Error fetching contact:", error)
+  }
+
+  // Fetch dữ liệu Global từ API
+  let globalData: any = null
+  try {
+    const response = await globalService().getGlobal()
+    globalData = response.data || response || null
+  } catch (error) {
+    console.error("Error fetching global:", error)
   }
 
   // Hàm convert Google Maps URL thành embed URL (async để resolve URL rút gọn)
@@ -131,7 +141,7 @@ export default async function ContactPage() {
         <section className="bg-card py-12 border-b border-border">
           <div className="container mx-auto px-4">
             <h1 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Giáo xứ Ngọc Mạch
+              {globalData?.siteName || "Giáo họ Tân Định"}
             </h1>
             <p className="text-muted-foreground text-lg">
               Thông tin liên hệ và địa chỉ
@@ -170,7 +180,7 @@ export default async function ContactPage() {
                         <Phone className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Điện Thoại Văn Phòng Giáo Xứ Ngọc Mạch</h3>
+                        <h3 className="font-semibold text-foreground mb-1">Điện Thoại Văn Phòng Giáo Họ Tân Định</h3>
                         <p className="text-muted-foreground text-sm">
                           {phone}
                         </p>
@@ -185,7 +195,7 @@ export default async function ContactPage() {
                         <Mail className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground mb-1">Email Ban Truyền Thông Giáo Xứ Ngọc Mạch</h3>
+                        <h3 className="font-semibold text-foreground mb-1">Email Ban Truyền Thông Giáo Họ Tân Định</h3>
                         <p className="text-muted-foreground text-sm">
                           {email}
                         </p>
@@ -220,7 +230,7 @@ export default async function ContactPage() {
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
-                  title="Bản đồ Giáo xứ Ngọc Mạch"
+                  title={`Bản đồ ${globalData?.siteName || "Giáo họ Tân Định"}`}
                 />
               </div>
             </div>

@@ -1,4 +1,5 @@
 import contactService from "@/services/contact.services"
+import globalService from "@/services/global.services"
 
 interface MapSectionProps {
     title?: string
@@ -128,6 +129,17 @@ export async function MapSection({
     
     console.log('MapSection - Final Map Embed URL:', mapEmbedUrl)
 
+    // Fetch dữ liệu Global từ API
+    let globalData: any = null
+    try {
+        const response = await globalService().getGlobal()
+        globalData = response.data || response || null
+    } catch (error) {
+        console.error("Error fetching global:", error)
+    }
+
+    const siteName = globalData?.siteName || "Giáo họ Tân Định"
+
     return (
         <div className="bg-card rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border border-border/50">
             <h3 className="text-lg font-bold text-primary bg-primary/10 px-4 py-2 rounded-lg mb-6 inline-block border border-primary/20">
@@ -140,7 +152,7 @@ export async function MapSection({
                     style={{ border: 0 }}
                     allowFullScreen
                     loading="lazy"
-                    title="Bản đồ Giáo xứ Ngọc Mạch"
+                    title={`Bản đồ ${siteName}`}
                 />
             </div>
         </div>

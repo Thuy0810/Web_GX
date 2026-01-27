@@ -1,5 +1,6 @@
 import Link from "next/link"
 import introduceService from "@/services/introduce.services"
+import globalService from "@/services/global.services"
 
 export async function IntroduceSection() {
   // Fetch dữ liệu từ API
@@ -18,9 +19,20 @@ export async function IntroduceSection() {
     }
   }
 
+  // Fetch dữ liệu Global từ API
+  let globalData: any = null
+  try {
+    const response = await globalService().getGlobal()
+    globalData = response.data || response || null
+  } catch (error) {
+    console.error("Error fetching global:", error)
+  }
+
   // Nếu không có dữ liệu hoặc lỗi, hiển thị fallback
   const title = introduceData?.title || "Giới thiệu Giáo xứ"
   const content = introduceData?.content || ""
+  const siteName = globalData?.siteName || "Giáo họ Tân Định"
+  const diocese = globalData?.diocese || "Giáo phận Vinh"
 
   // Hàm để strip HTML tags và lấy text thuần, giới hạn số từ (không bao gồm hình ảnh)
   const getPlainText = (html: string, maxWords: number = 500): string => {
@@ -67,14 +79,14 @@ export async function IntroduceSection() {
           </p>
         ) : (
           <p className="mb-4">
-            <strong className="text-foreground">Giáo xứ Ngọc Mạch</strong> là một giáo xứ thuộc Tổng Giáo phận Hà Nội, 
+            <strong className="text-foreground">{siteName}</strong> là một giáo họ thuộc {diocese}, 
             được thành lập với sứ mệnh loan báo Tin Mừng và phục vụ cộng đồng dân Chúa tại địa phương.
           </p>
         )}
       </div>
       <div className="mt-6 flex flex-wrap gap-3">
         <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">
-          Tổng Giáo phận Hà Nội
+          {diocese}
         </span>
         <span className="px-3 py-1 bg-secondary/20 text-secondary text-sm rounded-full">
           10+ Đoàn thể

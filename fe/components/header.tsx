@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Menu, X, ChevronDown, Search, Facebook, Youtube } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,12 +13,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import menuService from "@/services/menu.services"
 import contactService from "@/services/contact.services"
+import globalService from "@/services/global.services"
+import { baseUrl } from "@/services"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [menuItems, setMenuItems] = useState<any[]>([])
   const [expandedMenuItems, setExpandedMenuItems] = useState<Set<string>>(new Set())
   const [socialLinks, setSocialLinks] = useState({ fb: "https://facebook.com", youtube: "https://youtube.com" })
+  const [globalData, setGlobalData] = useState<{ siteName?: string; favicon?: any; diocese?: string } | null>(null)
 
   useEffect(() => {
     const fetchMenus = async () => {
@@ -162,21 +166,97 @@ export function Header() {
     fetchContact()
   }, [])
 
+  useEffect(() => {
+    const fetchGlobal = async () => {
+      try {
+        const response = await globalService().getGlobal()
+        const data = response.data || response || null
+        
+        // Debug log để kiểm tra dữ liệu
+        console.log('Header - Global response:', response)
+        console.log('Header - Global data:', data)
+        console.log('Header - Favicon data:', data?.favicon)
+        
+        if (data) {
+          setGlobalData({
+            siteName: data.siteName,
+            favicon: data.favicon,
+            diocese: data.diocese
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching global:", error)
+      }
+    }
+    fetchGlobal()
+  }, [])
+
   return (
     <header className="sticky top-0 z-50 w-full bg-primary shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white">
-              <span className="text-2xl font-bold text-primary">GX</span>
+            <div className="relative h-14 w-14 rounded-full bg-white overflow-hidden">
+              {(() => {
+                // Xử lý nhiều định dạng response từ Strapi
+                let faviconUrl = null
+                const favicon = globalData?.favicon
+                
+                if (favicon) {
+                  console.log('Header - Processing favicon:', favicon)
+                  
+                  // Kiểm tra các định dạng khác nhau
+                  if (typeof favicon === 'string') {
+                    faviconUrl = favicon
+                  } else if (favicon?.url) {
+                    faviconUrl = favicon.url
+                  } else if (favicon?.data?.attributes?.url) {
+                    faviconUrl = favicon.data.attributes.url
+                  } else if (favicon?.data?.url) {
+                    faviconUrl = favicon.data.url
+                  } else if (favicon?.attributes?.url) {
+                    faviconUrl = favicon.attributes.url
+                  } else if (favicon?.data) {
+                    // Nếu data là object trực tiếp
+                    faviconUrl = favicon.data.url || favicon.data
+                  }
+                  
+                  console.log('Header - Extracted faviconUrl:', faviconUrl)
+                  
+                  // Xử lý URL - nếu là relative path thì thêm baseUrl
+                  if (faviconUrl) {
+                    if (typeof faviconUrl === 'string' && !faviconUrl.startsWith('http') && !faviconUrl.startsWith('//') && !faviconUrl.startsWith('data:')) {
+                      faviconUrl = faviconUrl.startsWith('/') 
+                        ? `${baseUrl}${faviconUrl}` 
+                        : `${baseUrl}/${faviconUrl}`
+                    }
+                  }
+                  
+                  console.log('Header - Final favicon URL:', faviconUrl)
+                }
+                
+                // Luôn hiển thị logo, nếu không có từ API thì dùng placeholder
+                return (
+                  <Image
+                    src={faviconUrl || "/placeholder-logo.png"}
+                    alt={globalData?.siteName || "Logo"}
+                    fill
+                    className="object-cover rounded-full"
+                    onError={(e) => {
+                      console.error('Header - Image load error:', e)
+                      e.currentTarget.src = "/placeholder-logo.png"
+                    }}
+                  />
+                )
+              })()}
             </div>
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-primary-foreground leading-tight">
-                Giáo xứ Ngọc Mạch
+                {globalData?.siteName || "Giáo họ Tân Định"}
               </h1>
               <p className="text-xs text-primary-foreground/80">
-                Tổng Giáo phận Hà Nội
+                {globalData?.diocese || "Giáo phận Vinh"}
               </p>
             </div>
           </Link>
@@ -227,13 +307,7 @@ export function Header() {
 
           {/* Right side actions */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-primary-foreground hover:bg-white/10"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
+           
             {socialLinks.fb && (
               <Link
                 href={socialLinks.fb}

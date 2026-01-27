@@ -7,6 +7,7 @@ import { OrganizationsSection } from "@/components/organizations-section"
 import { ArticlesSection } from "@/components/articles-section"
 import { TrainingSection } from "@/components/training-section"
 import contactService from "@/services/contact.services"
+import globalService from "@/services/global.services"
 
 export default async function HomePage() {
   // Fetch dữ liệu liên hệ từ API
@@ -22,6 +23,15 @@ export default async function HomePage() {
     console.log('HomePage - Map field:', contactData?.map)
   } catch (error) {
     console.error("Error fetching contact:", error)
+  }
+
+  // Fetch dữ liệu Global từ API
+  let globalData: any = null
+  try {
+    const response = await globalService().getGlobal()
+    globalData = response.data || response || null
+  } catch (error) {
+    console.error("Error fetching global:", error)
   }
 
   // Hàm convert Google Maps URL thành embed URL (async để resolve URL rút gọn)
@@ -163,7 +173,7 @@ export default async function HomePage() {
                   <iframe
                     className="absolute inset-0 w-full h-full"
                     src={youtubeEmbedUrl}
-                    title="Video Giáo xứ Ngọc Mạch"
+                    title={`Video ${globalData?.siteName || "Giáo họ Tân Định"}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
@@ -186,7 +196,7 @@ export default async function HomePage() {
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                       </svg>
                     </div>
-                    <p className="font-medium text-foreground">Giáo xứ Ngọc Mạch</p>
+                    <p className="font-medium text-foreground">{globalData?.siteName || "Giáo họ Tân Định"}</p>
                     <p className="text-sm mt-1">Theo dõi Facebook để cập nhật tin tức</p>
                     <a
                       href={fb}
@@ -216,7 +226,7 @@ export default async function HomePage() {
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
-                title="Bản đồ Giáo xứ Ngọc Mạch"
+                title={`Bản đồ ${globalData?.siteName || "Giáo họ Tân Định"}`}
               />
             </div>
           </div>
