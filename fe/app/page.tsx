@@ -1,12 +1,36 @@
 import { Header } from "@/components/header"
 import { NewsSlider } from "@/components/news-slider"
 import { MassSchedule } from "@/components/mass-schedule"
+import { IntroduceSection } from "@/components/introduce-section"
 import { NewsSection } from "@/components/news-section"
 import { OrganizationsSection } from "@/components/organizations-section"
 import { ArticlesSection } from "@/components/articles-section"
 import { TrainingSection } from "@/components/training-section"
+import contactService from "@/services/contact.services"
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch dữ liệu liên hệ từ API
+  let contactData: any = null
+  try {
+    const response = await contactService().getContact()
+    contactData = response.data || null
+  } catch (error) {
+    console.error("Error fetching contact:", error)
+  }
+
+  const youtube = contactData?.youtube || "https://www.youtube.com/embed/dQw4w9WgXcQ"
+  const fb = contactData?.fb || "https://facebook.com"
+  
+  // Convert YouTube URL thành embed URL nếu cần
+  let youtubeEmbedUrl = youtube
+  if (youtube && !youtube.includes('/embed/')) {
+    const videoIdMatch = youtube.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
+    if (videoIdMatch) {
+      youtubeEmbedUrl = `https://www.youtube.com/embed/${videoIdMatch[1]}`
+    } else {
+      youtubeEmbedUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    }
+  }
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1">
@@ -24,38 +48,7 @@ export default function HomePage() {
 
               {/* Parish Introduction */}
               <div className="lg:col-span-2">
-                <div className="bg-card rounded-lg shadow-md p-6 h-full">
-                  <h3 className="text-xl font-bold text-primary mb-4 border-b border-border pb-3">
-                    Giới thiệu Giáo xứ
-                  </h3>
-                  <div className="prose prose-sm max-w-none text-muted-foreground">
-                    <p className="mb-4">
-                      <strong className="text-foreground">Giáo xứ Ngọc Mạch</strong> là một giáo xứ thuộc Tổng Giáo phận Hà Nội, 
-                      được thành lập với sứ mệnh loan báo Tin Mừng và phục vụ cộng đồng dân Chúa tại địa phương.
-                    </p>
-                    <p className="mb-4">
-                      Giáo xứ hiện có nhiều đoàn thể hoạt động sôi nổi như: Ca Đoàn Magis, Ca Đoàn Têrêsa, 
-                      Ca Đoàn Thánh Gia, Hội Anna, Hội Caritas, Hội Đồng Mục Vụ, Hội Gia Trưởng, 
-                      Hội Hiền Mẫu, Hội Legio, và Thiếu Nhi.
-                    </p>
-                    <p>
-                      Bên cạnh các hoạt động phụng vụ, Giáo xứ còn tổ chức nhiều chương trình đào tạo 
-                      như: Lớp Giáo lý Hôn nhân & Dự tòng, Giáo lý Thiếu Nhi, Lớp Tiếng Anh, 
-                      và các buổi cầu nguyện với Lời Chúa.
-                    </p>
-                  </div>
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">
-                      Tổng Giáo phận Hà Nội
-                    </span>
-                    <span className="px-3 py-1 bg-secondary/20 text-secondary text-sm rounded-full">
-                      10+ Đoàn thể
-                    </span>
-                    <span className="px-3 py-1 bg-muted text-muted-foreground text-sm rounded-full">
-                      Phục vụ cộng đồng
-                    </span>
-                  </div>
-                </div>
+                <IntroduceSection />
               </div>
             </div>
           </div>
@@ -85,7 +78,7 @@ export default function HomePage() {
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-muted shadow-md">
                   <iframe
                     className="absolute inset-0 w-full h-full"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    src={youtubeEmbedUrl}
                     title="Video Giáo xứ Ngọc Mạch"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
@@ -112,7 +105,7 @@ export default function HomePage() {
                     <p className="font-medium text-foreground">Giáo xứ Ngọc Mạch</p>
                     <p className="text-sm mt-1">Theo dõi Facebook để cập nhật tin tức</p>
                     <a
-                      href="https://facebook.com"
+                      href={fb}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-block mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"

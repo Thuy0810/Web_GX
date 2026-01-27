@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Facebook, Youtube, Mail, MapPin, Phone } from "lucide-react"
+import contactService from "@/services/contact.services"
 
 const quickLinks = [
   { label: "Trang chủ", href: "/" },
@@ -44,7 +45,22 @@ const recentPosts = [
   },
 ]
 
-export function Footer() {
+export async function Footer() {
+  // Fetch dữ liệu liên hệ từ API
+  let contactData: any = null
+  try {
+    const response = await contactService().getContact()
+    contactData = response.data || null
+  } catch (error) {
+    console.error("Error fetching contact:", error)
+  }
+
+  const address = contactData?.address || "Ngọc Mạch, Hà Nội, Việt Nam"
+  const phone = contactData?.phone || "+84 xxx xxx xxx"
+  const email = contactData?.email || "contact@giaoxungocmach.org"
+  const fb = contactData?.fb || "https://facebook.com"
+  const youtube = contactData?.youtube || "https://youtube.com"
+
   return (
     <footer className="bg-foreground text-background  w-full">
       {/* Main Footer */}
@@ -64,32 +80,36 @@ export function Footer() {
             <div className="space-y-2 text-sm text-background/80">
               <p className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>Ngọc Mạch, Hà Nội, Việt Nam</span>
+                <span>{address}</span>
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="h-4 w-4 flex-shrink-0" />
-                <span>+84 xxx xxx xxx</span>
+                <span>{phone}</span>
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0" />
-                <span>contact@giaoxungocmach.org</span>
+                <span>{email}</span>
               </p>
             </div>
             <div className="flex gap-3 mt-4">
-              <Link
-                href="https://facebook.com"
-                target="_blank"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-background/10 hover:bg-primary transition-colors"
-              >
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link
-                href="https://youtube.com"
-                target="_blank"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-background/10 hover:bg-secondary transition-colors"
-              >
-                <Youtube className="h-5 w-5" />
-              </Link>
+              {fb && (
+                <Link
+                  href={fb}
+                  target="_blank"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-background/10 hover:bg-primary transition-colors"
+                >
+                  <Facebook className="h-5 w-5" />
+                </Link>
+              )}
+              {youtube && (
+                <Link
+                  href={youtube}
+                  target="_blank"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-background/10 hover:bg-secondary transition-colors"
+                >
+                  <Youtube className="h-5 w-5" />
+                </Link>
+              )}
             </div>
           </div>
 

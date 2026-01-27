@@ -7,8 +7,22 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import contactService from "@/services/contact.services"
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  // Fetch dữ liệu liên hệ từ API
+  let contactData: any = null
+  try {
+    const response = await contactService().getContact()
+    contactData = response.data || null
+  } catch (error) {
+    console.error("Error fetching contact:", error)
+  }
+
+  const address = contactData?.address || "357 Xuân Phương - Nam Từ Liêm – Hà Nội"
+  const phone = contactData?.phone || "0976.677.950"
+  const email = contactData?.email || "bttngocmach@gmail.com"
+  const workTime = contactData?.workTime || "Thứ 2 - Chủ nhật: 8:00 - 17:00"
 
   return (
     <main className="flex-1">
@@ -51,56 +65,64 @@ export default function ContactPage() {
                 
                 <div className="space-y-6">
                   {/* Address */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
-                      <MapPin className="h-6 w-6 text-primary" />
+                  {address && (
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                        <MapPin className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-1">Địa chỉ</h3>
+                        <p className="text-muted-foreground text-sm">
+                          {address}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Địa chỉ</h3>
-                      <p className="text-muted-foreground text-sm">
-                        357 Xuân Phương - Nam Từ Liêm – Hà Nội
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Phone */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
-                      <Phone className="h-6 w-6 text-primary" />
+                  {phone && (
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                        <Phone className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-1">Điện Thoại Văn Phòng Giáo Xứ Ngọc Mạch</h3>
+                        <p className="text-muted-foreground text-sm">
+                          {phone}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Điện Thoại Văn Phòng Giáo Xứ Ngọc Mạch</h3>
-                      <p className="text-muted-foreground text-sm">
-                        0976.677.950
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Email */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
-                      <Mail className="h-6 w-6 text-primary" />
+                  {email && (
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                        <Mail className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-1">Email Ban Truyền Thông Giáo Xứ Ngọc Mạch</h3>
+                        <p className="text-muted-foreground text-sm">
+                          {email}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Email Ban Truyền Thông Giáo Xứ Ngọc Mạch</h3>
-                      <p className="text-muted-foreground text-sm">
-                        bttngocmach@gmail.com
-                      </p>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Office Hours */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
-                      <Clock className="h-6 w-6 text-primary" />
+                  {workTime && (
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                        <Clock className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-1">Giờ làm việc</h3>
+                        <p className="text-muted-foreground text-sm">
+                          {workTime}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Giờ làm việc</h3>
-                      <p className="text-muted-foreground text-sm">
-                        Thứ 2 - Chủ nhật: 8:00 - 17:00
-                      </p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

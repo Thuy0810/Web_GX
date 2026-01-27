@@ -1,12 +1,27 @@
+import contactService from "@/services/contact.services"
+
 interface FacebookWidgetProps {
     title?: string
     facebookUrl?: string
 }
 
-export function FacebookWidget({ 
+export async function FacebookWidget({ 
     title = "THEO DÕI FACEBOOK",
-    facebookUrl = "https://facebook.com"
+    facebookUrl
 }: FacebookWidgetProps) {
+    // Fetch dữ liệu liên hệ từ API nếu không có facebookUrl được truyền vào
+    let fbUrl = facebookUrl
+    if (!fbUrl) {
+        try {
+            const response = await contactService().getContact()
+            const contactData = response.data || null
+            fbUrl = contactData?.fb || "https://facebook.com"
+        } catch (error) {
+            console.error("Error fetching contact:", error)
+            fbUrl = "https://facebook.com"
+        }
+    }
+
     return (
         <div className="bg-card rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border border-border/50">
             <h3 className="text-lg font-bold text-primary bg-primary/10 px-4 py-2 rounded-lg mb-6 inline-block border border-primary/20">
@@ -26,7 +41,7 @@ export function FacebookWidget({
                     <p className="font-bold text-foreground text-base mb-1">Giáo xứ Ngọc Mạch</p>
                     <p className="text-sm mb-5">Theo dõi Facebook để cập nhật tin tức</p>
                     <a
-                        href={facebookUrl}
+                        href={fbUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"

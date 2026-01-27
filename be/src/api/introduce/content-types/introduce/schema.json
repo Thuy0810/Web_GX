@@ -1,0 +1,25 @@
+{
+  "kind": "singleType",
+  "collectionName": "introduces",
+  "info": {
+    "singularName": "introduce",
+    "pluralName": "introduces",
+    "displayName": "Introduce"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "customField",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "defaultMarkdown"
+      }
+    }
+  }
+}

@@ -58,6 +58,16 @@ export interface SharedSlider extends Struct.ComponentSchema {
   };
 }
 
+export interface TextText extends Struct.ComponentSchema {
+  collectionName: 'components_text_texts';
+  info: {
+    displayName: 'Text';
+  };
+  attributes: {
+    title: Schema.Attribute.String;
+  };
+}
+
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
@@ -66,6 +76,7 @@ declare module '@strapi/strapi' {
       'shared.rich-text': SharedRichText;
       'shared.seo': SharedSeo;
       'shared.slider': SharedSlider;
+      'text.text': TextText;
     }
   }
 }

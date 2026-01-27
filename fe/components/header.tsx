@@ -11,11 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import menuService from "@/services/menu.services"
+import contactService from "@/services/contact.services"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [menuItems, setMenuItems] = useState<any[]>([])
   const [expandedMenuItems, setExpandedMenuItems] = useState<Set<string>>(new Set())
+  const [socialLinks, setSocialLinks] = useState({ fb: "https://facebook.com", youtube: "https://youtube.com" })
 
   useEffect(() => {
     const fetchMenus = async () => {
@@ -142,6 +144,24 @@ export function Header() {
     fetchMenus();
   }, [])
 
+  useEffect(() => {
+    const fetchContact = async () => {
+      try {
+        const response = await contactService().getContact()
+        const contactData = response.data || null
+        if (contactData) {
+          setSocialLinks({
+            fb: contactData.fb || "https://facebook.com",
+            youtube: contactData.youtube || "https://youtube.com"
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching contact:", error)
+      }
+    }
+    fetchContact()
+  }, [])
+
   return (
     <header className="sticky top-0 z-50 w-full bg-primary shadow-lg">
       <div className="container mx-auto px-4">
@@ -214,20 +234,24 @@ export function Header() {
             >
               <Search className="h-5 w-5" />
             </Button>
-            <Link
-              href="https://facebook.com"
-              target="_blank"
-              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-primary-foreground hover:bg-white/10"
-            >
-              <Facebook className="h-5 w-5" />
-            </Link>
-            <Link
-              href="https://youtube.com"
-              target="_blank"
-              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-primary-foreground hover:bg-white/10"
-            >
-              <Youtube className="h-5 w-5" />
-            </Link>
+            {socialLinks.fb && (
+              <Link
+                href={socialLinks.fb}
+                target="_blank"
+                className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-primary-foreground hover:bg-white/10"
+              >
+                <Facebook className="h-5 w-5" />
+              </Link>
+            )}
+            {socialLinks.youtube && (
+              <Link
+                href={socialLinks.youtube}
+                target="_blank"
+                className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-primary-foreground hover:bg-white/10"
+              >
+                <Youtube className="h-5 w-5" />
+              </Link>
+            )}
             <Button
               variant="ghost"
               size="icon"

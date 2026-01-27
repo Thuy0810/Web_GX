@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "liturgical_calendars",
+  "info": {
+    "singularName": "liturgical-calendar",
+    "pluralName": "liturgical-calendars",
+    "displayName": "LiturgicalCalendar"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Title": {
+      "type": "string"
+    },
+    "Schedude": {
+      "type": "component",
+      "component": "text.text",
+      "repeatable": true
+    }
+  }
+}

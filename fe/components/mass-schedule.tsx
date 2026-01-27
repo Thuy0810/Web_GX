@@ -1,6 +1,54 @@
 import { Clock, Church } from "lucide-react"
+import liturgicalCalendarService from "@/services/liturgical-calendar.services"
 
-export function MassSchedule() {
+export async function MassSchedule() {
+  // Fetch dữ liệu từ API
+  let schedules: any[] = []
+  let hasError = false
+  
+  try {
+    const response = await liturgicalCalendarService().getLiturgicalCalendars()
+    schedules = response.data || []
+  } catch (error: any) {
+    // Log lỗi nhưng không crash component
+    console.error("Error fetching liturgical calendars:", error)
+    hasError = true
+    
+    // Nếu là lỗi 403, có thể là do chưa enable permission trong Strapi
+    if (error?.message?.includes('403')) {
+      console.warn("Lỗi 403: Vui lòng enable permission 'find' cho 'liturgical-calendar' trong Strapi Admin > Settings > Users & Permissions Plugin > Public role")
+    }
+  }
+
+  // Hàm helper để lấy schedule items từ nhiều định dạng dữ liệu khác nhau
+  const getScheduleItems = (schedule: any): any[] => {
+    if (!schedule.Schedude) return []
+    
+    // Trường hợp 1: Mảng trực tiếp
+    if (Array.isArray(schedule.Schedude)) {
+      return schedule.Schedude.map((item: any) => {
+        // Nếu item có attributes (Strapi v4 format)
+        if (item.attributes) {
+          return { title: item.attributes.title || '' }
+        }
+        // Nếu item là object trực tiếp
+        return { title: item.title || '' }
+      })
+    }
+    
+    // Trường hợp 2: Có data wrapper (Strapi v4 format)
+    if (schedule.Schedude.data && Array.isArray(schedule.Schedude.data)) {
+      return schedule.Schedude.data.map((item: any) => {
+        if (item.attributes) {
+          return { title: item.attributes.title || '' }
+        }
+        return { title: item.title || '' }
+      })
+    }
+    
+    return []
+  }
+
   return (
     <div className="bg-card rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border border-border/50">
       <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-primary/20">
@@ -11,73 +59,50 @@ export function MassSchedule() {
       </div>
 
       <div className="space-y-5">
-        {/* Weekdays */}
-        <div className="border-b border-border/50 pb-5 last:border-0">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="p-1.5 rounded-md bg-secondary/10">
-              <Clock className="h-3.5 w-3.5 text-secondary" />
-            </div>
-            <span className="font-bold text-foreground text-sm">Từ thứ 2 → thứ 6</span>
+        {hasError ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p className="text-sm">Không thể tải lịch lễ. Vui lòng kiểm tra cấu hình API.</p>
           </div>
-          <div className="pl-8 space-y-2 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ sáng:</span> 5:30 Lễ Chung</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ tối:</span> 19:00 Lễ Chung</span>
-            </p>
+        ) : schedules.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>Chưa có lịch lễ nào.</p>
           </div>
-        </div>
+        ) : (
+          schedules.map((schedule, index) => {
+            const scheduleItems = getScheduleItems(schedule)
+            const isLast = index === schedules.length - 1
 
-        {/* Saturday */}
-        <div className="border-b border-border/50 pb-5 last:border-0">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="p-1.5 rounded-md bg-secondary/10">
-              <Clock className="h-3.5 w-3.5 text-secondary" />
-            </div>
-            <span className="font-bold text-foreground text-sm">Thứ 7</span>
-          </div>
-          <div className="pl-8 space-y-2 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ sáng:</span> 5:30 Lễ ngày thường</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ tối:</span> 19:00 – Lễ Chúa Nhật</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Sunday */}
-        <div>
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="p-1.5 rounded-md bg-secondary/10">
-              <Clock className="h-3.5 w-3.5 text-secondary" />
-            </div>
-            <span className="font-bold text-foreground text-sm">Chúa Nhật: có 4 Thánh Lễ</span>
-          </div>
-          <div className="pl-8 space-y-2 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ sáng:</span> 6:30 Lễ Chung</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ sáng:</span> 10:00 Lễ Thiếu Nhi</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ chiều:</span> 17:00 Lễ Giới Trẻ</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-              <span><span className="font-semibold text-foreground">Lễ tối:</span> 19:00 Lễ Chung</span>
-            </p>
-          </div>
-        </div>
+            return (
+              <div 
+                key={schedule.id || index} 
+                className={`border-b border-border/50 pb-5 ${isLast ? 'last:border-0' : ''}`}
+              >
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="p-1.5 rounded-md bg-secondary/10">
+                    <Clock className="h-3.5 w-3.5 text-secondary" />
+                  </div>
+                  <span className="font-bold text-foreground text-sm">
+                    {schedule.Title || `Nhóm ${index + 1}`}
+                  </span>
+                </div>
+                {scheduleItems.length > 0 ? (
+                  <div className="pl-8 space-y-2 text-sm text-muted-foreground">
+                    {scheduleItems.map((item: any, itemIndex: number) => (
+                      <p key={itemIndex} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        <span>{item.title || ''}</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="pl-8 text-sm text-muted-foreground">
+                    <p>Chưa có lịch lễ nào trong nhóm này.</p>
+                  </div>
+                )}
+              </div>
+            )
+          })
+        )}
       </div>
     </div>
   )
