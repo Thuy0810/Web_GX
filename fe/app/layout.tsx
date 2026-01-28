@@ -59,7 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
       }
     }
   } catch (error) {
-    console.error("Error fetching global data for metadata:", error)
+    // Error fetching global data for metadata
   }
 
   const metadata: Metadata = {

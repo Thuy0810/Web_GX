@@ -11,12 +11,7 @@ export async function IntroduceSection() {
     const response = await introduceService().getIntroduce()
     introduceData = response.data || null
   } catch (error: any) {
-    console.error("Error fetching introduce:", error)
     hasError = true
-    
-    if (error?.message?.includes('403')) {
-      console.warn("Lỗi 403: Vui lòng enable permission 'find' cho 'introduce' trong Strapi Admin > Settings > Users & Permissions Plugin > Public role")
-    }
   }
 
   // Fetch dữ liệu Global từ API
@@ -25,7 +20,7 @@ export async function IntroduceSection() {
     const response = await globalService().getGlobal()
     globalData = response.data || response || null
   } catch (error) {
-    console.error("Error fetching global:", error)
+    // Error fetching global
   }
 
   // Nếu không có dữ liệu hoặc lỗi, hiển thị fallback

@@ -13,7 +13,7 @@ export async function Footer() {
     const response = await contactService().getContact()
     contactData = response.data || null
   } catch (error) {
-    console.error("Error fetching contact:", error)
+    // Error fetching contact
   }
 
   // Fetch dữ liệu Global từ API
@@ -22,7 +22,7 @@ export async function Footer() {
     const response = await globalService().getGlobal()
     globalData = response.data || response || null
   } catch (error) {
-    console.error("Error fetching global:", error)
+    // Error fetching global
   }
 
   // Fetch 2 bài viết mới nhất từ API
@@ -58,7 +58,7 @@ export async function Footer() {
     }) || []
     recentPosts = posts
   } catch (error) {
-    console.error("Error fetching recent posts:", error)
+    // Error fetching recent posts
   }
 
   const address = contactData?.address || "Tân Định, Hà Nội, Việt Nam"

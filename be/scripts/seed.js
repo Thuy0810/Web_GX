@@ -10,7 +10,6 @@ async function seedExampleApp() {
 
   if (shouldImportSeedData) {
     try {
-      console.log('Setting up the template...');
       await importSeedData();
       console.log('Ready to go');
     } catch (error) {

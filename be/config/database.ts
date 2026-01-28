@@ -2,7 +2,18 @@ import path from 'path';
 
 export default ({ env }) => {
   const client = env('DATABASE_CLIENT', 'mysql');
-
+  console.log(env('DATABASE_HOST', 'localhost'));
+  console.log(env('DATABASE_PORT', 3306));
+  console.log(env('DATABASE_NAME', 'strapi'));
+  console.log(env('DATABASE_USERNAME', 'strapi'));
+  console.log(env('DATABASE_PASSWORD', 'strapi'));
+  console.log(env('DATABASE_SSL', false));
+  console.log(env('DATABASE_SSL_KEY', undefined));
+  console.log(env('DATABASE_SSL_CERT', undefined));
+  console.log(env('DATABASE_SSL_CA', undefined));
+  console.log(env('DATABASE_SSL_CAPATH', undefined));
+  console.log(env('DATABASE_SSL_CIPHER', undefined));
+  console.log(env('DATABASE_SSL_REJECT_UNAUTHORIZED', true));
   const connections = {
     mysql: {
       connection: {

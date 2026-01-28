@@ -19,11 +19,7 @@ export const fetchGet = async (
     const fullUrl = `${baseUrl}/api/${url}${queryString}`;
 
     // Debug log cho global service
-    if (url.includes('global')) {
-        console.log('fetchGet - Global URL:', fullUrl);
-        console.log('fetchGet - Query object:', queryObject);
-        console.log('fetchGet - Query string:', query);
-    }
+   
 
     try {
         const res = await fetch(fullUrl, {
@@ -36,7 +32,6 @@ export const fetchGet = async (
 
         return await res.json();
     } catch (error) {
-        console.error(`Error fetching ${fullUrl}:`, error);
         throw error;
     }
 };

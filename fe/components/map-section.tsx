@@ -34,9 +34,7 @@ export async function MapSection({
                     }
                 })
                 resolvedUrl = response.url || url
-                console.log('Resolved shortened URL:', resolvedUrl)
             } catch (error) {
-                console.warn('Không thể resolve URL rút gọn:', error)
                 // Tiếp tục với URL gốc
             }
         }
@@ -73,7 +71,6 @@ export async function MapSection({
             
             if (lat && lng) {
                 // Tạo embed URL với coordinates - sử dụng format đơn giản
-                console.log('MapSection - Extracted coordinates:', lat, lng, 'from URL:', resolvedUrl)
                 // Sử dụng format đơn giản với q parameter (coordinates)
                 return `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1647881040827!5m2!1sen!2s`
             }
@@ -88,7 +85,6 @@ export async function MapSection({
         }
         
         // Nếu không phải Google Maps URL hợp lệ, trả về fallback
-        console.warn('Map URL không hợp lệ hoặc không phải embed URL:', url)
         return "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096949688028!2d105.85192731540222!3d21.02649139299312!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab953357c995%3A0x1babf6bb4f9a20e!2sHanoi%2C%20Vietnam!5e0!3m2!1sen!2s!4v1647881040827!5m2!1sen!2s"
     }
 
@@ -99,11 +95,7 @@ export async function MapSection({
             const response = await contactService().getContact()
             // Strapi singleType có thể trả về data trực tiếp hoặc trong response.data
             const contactData = response.data || response || null
-            
-            // Debug: Log để kiểm tra dữ liệu
-            console.log('MapSection - Full response:', response)
-            console.log('MapSection - Contact data:', contactData)
-            console.log('MapSection - Map field:', contactData?.map)
+
             
             // Lấy map URL, kiểm tra cả map và Map (case sensitive)
             const rawMapUrl = contactData?.map || contactData?.Map || ""
@@ -111,10 +103,7 @@ export async function MapSection({
             // Convert sang embed URL (async)
             mapEmbedUrl = await convertToEmbedUrl(rawMapUrl)
             
-            console.log('MapSection - Raw Map URL:', rawMapUrl)
-            console.log('MapSection - Converted Embed URL:', mapEmbedUrl)
         } catch (error) {
-            console.error("Error fetching contact:", error)
             mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096949688028!2d105.85192731540222!3d21.02649139299312!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab953357c995%3A0x1babf6bb4f9a20e!2sHanoi%2C%20Vietnam!5e0!3m2!1sen!2s!4v1647881040827!5m2!1sen!2s"
         }
     } else {
@@ -126,8 +115,6 @@ export async function MapSection({
     if (!mapEmbedUrl || mapEmbedUrl.trim() === '') {
         mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096949688028!2d105.85192731540222!3d21.02649139299312!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab953357c995%3A0x1babf6bb4f9a20e!2sHanoi%2C%20Vietnam!5e0!3m2!1sen!2s!4v1647881040827!5m2!1sen!2s"
     }
-    
-    console.log('MapSection - Final Map Embed URL:', mapEmbedUrl)
 
     // Fetch dữ liệu Global từ API
     let globalData: any = null
@@ -135,7 +122,7 @@ export async function MapSection({
         const response = await globalService().getGlobal()
         globalData = response.data || response || null
     } catch (error) {
-        console.error("Error fetching global:", error)
+        // Error fetching global
     }
 
     const siteName = globalData?.siteName || "Giáo họ Tân Định"

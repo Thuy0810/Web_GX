@@ -137,7 +137,6 @@ export function Header() {
           ...formattedMenus
         ]);
       } catch (error) {
-        console.error("Error fetching menus:", error);
         // Fallback menu nếu có lỗi
         setMenuItems([
           { label: "Trang chủ", href: "/" },
@@ -160,7 +159,7 @@ export function Header() {
           })
         }
       } catch (error) {
-        console.error("Error fetching contact:", error)
+        // Error fetching contact
       }
     }
     fetchContact()
@@ -172,10 +171,7 @@ export function Header() {
         const response = await globalService().getGlobal()
         const data = response.data || response || null
         
-        // Debug log để kiểm tra dữ liệu
-        console.log('Header - Global response:', response)
-        console.log('Header - Global data:', data)
-        console.log('Header - Favicon data:', data?.favicon)
+      
         
         if (data) {
           setGlobalData({
@@ -185,7 +181,7 @@ export function Header() {
           })
         }
       } catch (error) {
-        console.error("Error fetching global:", error)
+        // Error fetching global
       }
     }
     fetchGlobal()
@@ -204,8 +200,6 @@ export function Header() {
                 const favicon = globalData?.favicon
                 
                 if (favicon) {
-                  console.log('Header - Processing favicon:', favicon)
-                  
                   // Kiểm tra các định dạng khác nhau
                   if (typeof favicon === 'string') {
                     faviconUrl = favicon
@@ -222,8 +216,6 @@ export function Header() {
                     faviconUrl = favicon.data.url || favicon.data
                   }
                   
-                  console.log('Header - Extracted faviconUrl:', faviconUrl)
-                  
                   // Xử lý URL - nếu là relative path thì thêm baseUrl
                   if (faviconUrl) {
                     if (typeof faviconUrl === 'string' && !faviconUrl.startsWith('http') && !faviconUrl.startsWith('//') && !faviconUrl.startsWith('data:')) {
@@ -232,8 +224,6 @@ export function Header() {
                         : `${baseUrl}/${faviconUrl}`
                     }
                   }
-                  
-                  console.log('Header - Final favicon URL:', faviconUrl)
                 }
                 
                 // Luôn hiển thị logo, nếu không có từ API thì dùng placeholder
@@ -244,7 +234,6 @@ export function Header() {
                     fill
                     className="object-cover rounded-full"
                     onError={(e) => {
-                      console.error('Header - Image load error:', e)
                       e.currentTarget.src = "/placeholder-logo.png"
                     }}
                   />
@@ -307,7 +296,7 @@ export function Header() {
 
           {/* Right side actions */}
           <div className="flex items-center gap-2">
-           
+            
             {socialLinks.fb && (
               <Link
                 href={socialLinks.fb}
@@ -355,9 +344,13 @@ export function Header() {
                   <div className="flex items-center justify-between">
                     {hasSubmenu ? (
                       <>
-                        <span className="flex-1 block py-3 text-primary-foreground font-medium">
+                        <Link
+                          href={item.href}
+                          className="flex-1 block py-3 text-primary-foreground font-medium hover:text-primary-foreground/80 transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
                           {item.label}
-                        </span>
+                        </Link>
                         <button
                           type="button"
                           onClick={(e) => {
@@ -373,7 +366,7 @@ export function Header() {
                               return newSet;
                             });
                           }}
-                          className="p-2 text-primary-foreground hover:bg-white/10 rounded-md transition-colors"
+                          className="p-2 text-primary-foreground hover:bg-white/10 rounded-md transition-colors ml-2"
                           aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
                         >
                           <ChevronDown 
@@ -384,7 +377,7 @@ export function Header() {
                     ) : (
                       <Link
                         href={item.href}
-                        className="flex-1 block py-3 text-primary-foreground font-medium"
+                        className="flex-1 block py-3 text-primary-foreground font-medium hover:text-primary-foreground/80 transition-colors"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.label}

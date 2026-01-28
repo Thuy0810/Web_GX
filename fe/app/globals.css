@@ -135,8 +135,17 @@ td tr th {
   margin-left: auto !important;
   margin-right: auto !important;
   border-radius: 0.5rem;
-  max-width: 100%;
+  max-width: 100% !important;
   height: auto;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+@media (min-width: 640px) {
+  .prose img {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
 }
 
 /* Đảm bảo prose sử dụng cùng phông chữ với hệ thống */
@@ -146,4 +155,87 @@ td tr th {
 
 .prose * {
   font-family: inherit !important;
+}
+
+/* Responsive cho prose content trên mobile */
+.prose p {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .prose table {
+    display: table;
+    white-space: normal;
+  }
+}
+
+.prose blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 1rem;
+  border-left-width: 2px;
+}
+
+@media (min-width: 640px) {
+  .prose blockquote {
+    padding-left: 1.5rem;
+  }
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .prose ul,
+  .prose ol {
+    padding-left: 1.5rem;
+  }
+}
+
+.prose a {
+  word-break: break-word;
+}
+
+.prose pre {
+  overflow-x: auto;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .prose pre {
+    font-size: 1rem;
+  }
+}
+
+.prose code {
+  font-size: 0.875em;
+  word-break: break-word;
+}
+
+.prose video,
+.prose iframe {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
 }

@@ -10,14 +10,7 @@ export async function MassSchedule() {
     const response = await liturgicalCalendarService().getLiturgicalCalendars()
     schedules = response.data || []
   } catch (error: any) {
-    // Log lỗi nhưng không crash component
-    console.error("Error fetching liturgical calendars:", error)
     hasError = true
-    
-    // Nếu là lỗi 403, có thể là do chưa enable permission trong Strapi
-    if (error?.message?.includes('403')) {
-      console.warn("Lỗi 403: Vui lòng enable permission 'find' cho 'liturgical-calendar' trong Strapi Admin > Settings > Users & Permissions Plugin > Public role")
-    }
   }
 
   // Hàm helper để lấy schedule items từ nhiều định dạng dữ liệu khác nhau

@@ -69,7 +69,6 @@ export function NewsSlider() {
         setSlides(latestPosts);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching thong bao posts:", error);
         setLoading(false);
       }
     };

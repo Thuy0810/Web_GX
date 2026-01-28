@@ -25,7 +25,6 @@ export default async function IntroducePage() {
         const response = await introduceService().getIntroduce()
         introduceData = response.data || null
     } catch (error: any) {
-        console.error("Error fetching introduce:", error)
         hasError = true
     }
 
@@ -35,7 +34,7 @@ export default async function IntroducePage() {
         const response = await globalService().getGlobal()
         globalData = response.data || response || null
     } catch (error) {
-        console.error("Error fetching global:", error)
+        // Error fetching global
     }
 
     const siteName = globalData?.siteName || "Giáo họ Tân Định"

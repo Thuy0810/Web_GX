@@ -54,7 +54,7 @@ export function OrganizationsSection() {
           }
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        // Error fetching categories
       }
     };
 
@@ -125,7 +125,6 @@ export function OrganizationsSection() {
         setOrganizationNews(formattedPosts);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching organization news:", error);
         setOrganizationNews([]);
         setLoading(false);
       }

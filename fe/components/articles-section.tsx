@@ -78,7 +78,6 @@ export function ArticlesSection() {
         setArticles(formattedPosts);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching articles:", error);
         setArticles([]);
         setLoading(false);
       }

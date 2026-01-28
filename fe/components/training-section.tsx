@@ -72,7 +72,6 @@ export function TrainingSection() {
         setTrainingItems(formattedPosts);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching training items:", error);
         setTrainingItems([]);
         setLoading(false);
       }

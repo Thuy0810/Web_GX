@@ -24,7 +24,6 @@ export function NewsSection() {
         // Lấy bài viết từ category tương ứng với tab (tối đa 7 bài)
         const postsData = await postService().getPosts(undefined, activeTab);
         let allPosts = postsData.data || [];
-        console.log(`Total posts from API for ${activeTab}:`, allPosts.length);
         
         // Sắp xếp lại theo thời gian đăng (mới nhất trước) để đảm bảo bài mới nhất là main news
         allPosts = allPosts.sort((a: any, b: any) => {
@@ -82,11 +81,9 @@ export function NewsSection() {
           };
         });
         
-        console.log(`Formatted posts:`, formattedPosts.length, formattedPosts);
         setNewsItems(formattedPosts);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching news:", error);
         setNewsItems([]);
         setLoading(false);
       }

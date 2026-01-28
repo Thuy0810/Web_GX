@@ -28,7 +28,6 @@ export async function VideoSection({
                 }
             }
         } catch (error) {
-            console.error("Error fetching contact:", error)
             youtubeUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ"
         }
     }
@@ -39,7 +38,7 @@ export async function VideoSection({
         const response = await globalService().getGlobal()
         globalData = response.data || response || null
     } catch (error) {
-        console.error("Error fetching global:", error)
+        // Error fetching global
     }
 
     const siteName = globalData?.siteName || "Giáo họ Tân Định"

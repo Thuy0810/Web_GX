@@ -17,12 +17,8 @@ export default async function ContactPage() {
     const response = await contactService().getContact()
     // Strapi singleType có thể trả về data trực tiếp hoặc trong response.data
     contactData = response.data || response || null
-    
-    // Debug: Log để kiểm tra dữ liệu
-    console.log('ContactPage - Full response:', response)
-    console.log('ContactPage - Contact data:', contactData)
   } catch (error) {
-    console.error("Error fetching contact:", error)
+    // Error fetching contact
   }
 
   // Fetch dữ liệu Global từ API
@@ -31,7 +27,7 @@ export default async function ContactPage() {
     const response = await globalService().getGlobal()
     globalData = response.data || response || null
   } catch (error) {
-    console.error("Error fetching global:", error)
+    // Error fetching global
   }
 
   // Hàm convert Google Maps URL thành embed URL (async để resolve URL rút gọn)
@@ -57,9 +53,7 @@ export default async function ContactPage() {
           }
         })
         resolvedUrl = response.url || url
-        console.log('Resolved shortened URL:', url, '->', resolvedUrl)
       } catch (error) {
-        console.warn('Không thể resolve URL rút gọn:', error)
         // Tiếp tục với URL gốc
       }
     }
@@ -87,7 +81,6 @@ export default async function ContactPage() {
       
       if (lat && lng) {
         // Tạo embed URL với coordinates - sử dụng format đơn giản
-        console.log('ContactPage - Extracted coordinates:', lat, lng, 'from URL:', resolvedUrl)
         // Sử dụng format đơn giản với coordinates
         return `https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d${lng}!3d${lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1647881040827!5m2!1sen!2s`
       }
@@ -102,7 +95,6 @@ export default async function ContactPage() {
     }
     
     // Nếu không thể convert, trả về fallback
-    console.warn('Không thể convert URL thành embed URL:', url)
     return "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096949688028!2d105.85192731540222!3d21.02649139299312!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab953357c995%3A0x1babf6bb4f9a20e!2sHanoi%2C%20Vietnam!5e0!3m2!1sen!2s!4v1647881040827!5m2!1sen!2s"
   }
 
@@ -113,10 +105,7 @@ export default async function ContactPage() {
   // Lấy map URL, kiểm tra cả map và Map (case sensitive)
   const rawMapUrl = contactData?.map || contactData?.Map || ""
   const mapUrl = await convertToEmbedUrl(rawMapUrl)
-  
-  console.log('ContactPage - Contact data:', contactData)
-  console.log('ContactPage - Raw Map URL:', rawMapUrl)
-  console.log('ContactPage - Final Map URL:', mapUrl)
+
 
   return (
     <main className="flex-1">
