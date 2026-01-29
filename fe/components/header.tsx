@@ -188,7 +188,7 @@ export function Header() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-primary shadow-lg">
+    <header className="fixed lg:sticky top-0 z-50 w-full bg-primary shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-3">
           {/* Logo */}
@@ -240,8 +240,8 @@ export function Header() {
                 )
               })()}
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-primary-foreground leading-tight">
+            <div className="block">
+              <h1 className="text-sm sm:text-lg font-bold text-primary-foreground leading-tight">
                 {globalData?.siteName || "Giáo họ Tân Định"}
               </h1>
               <p className="text-xs text-primary-foreground/80">
