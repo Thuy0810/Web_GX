@@ -4,7 +4,7 @@ services:
     image: registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:latest
     restart: unless-stopped
     env_file: .env
-    
+
     environment:
       DATABASE_CLIENT: ${DATABASE_CLIENT}
       DATABASE_HOST: db-mysql
@@ -15,35 +15,35 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
       APP_KEYS: ${APP_KEYS}
-      NODE_ENV: ${NODE_ENV}
+      NODE_ENV: production
 
     volumes:
-      - ./public/uploads:/opt/app/public/uploads
-      - ./tmp:/opt/app/.tmp
+      # ✅ persist uploads
+      - ./public/uploads:/opt/app/be-gx/public/uploads
+      # ✅ persist tmp
+      - ./tmp:/opt/app/be-gx/.tmp
 
     ports:
       - "1337:1337"
-    
+
     networks:
       - springboot-mysql
 
   fe-gx:
     container_name: fe-gx
     image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:latest
-    restart: unless-stopped  # ← Thêm để auto restart
-    
+    restart: unless-stopped
+
     environment:
-      # ✅ Không có khoảng trắng
       NEXT_PUBLIC_STRAPI_API_URL: https://admin-gx.taikhoansieure.vn
       PORT: 3999
-      HOSTNAME: 0.0.0.0  # ← Khớp với Dockerfile
-    
+      HOSTNAME: 0.0.0.0
+
     ports:
-      - "3999:3999"  # host:container
-    
+      - "3999:3999"
+
     networks:
       - springboot-mysql
-  
 
 networks:
   springboot-mysql:

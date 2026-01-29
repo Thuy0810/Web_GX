@@ -1,34 +1,41 @@
-# Creating multi-stage build for production
+# ---- Build stage ----
 FROM node:22-alpine AS build
-RUN apk update && apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev vips-dev git > /dev/null 2>&1
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+RUN apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev vips-dev git
 
-WORKDIR /opt/
+# 👉 WORKDIR mới
+WORKDIR /opt/app/be-gx
+
+# Cache deps
 COPY package.json yarn.lock ./
-RUN yarn global add node-gyp
-RUN yarn config set network-timeout 600000 -g && yarn install --production
-ENV PATH=/opt/node_modules/.bin:$PATH
-WORKDIR /opt/app
+RUN yarn config set network-timeout 600000 -g && yarn install --frozen-lockfile
+
+# Copy source & build admin
 COPY . .
+ENV NODE_ENV=production
 RUN yarn build
 
-# Creating final production image
-FROM node:22-alpine
+# ---- Runtime stage ----
+FROM node:22-alpine AS runtime
 RUN apk add --no-cache vips-dev
+
+# 👉 WORKDIR mới
+WORKDIR /opt/app/be-gx
+
+# Copy built app
+COPY --from=build /opt/app/be-gx ./
+
+# Install production deps only
+RUN yarn config set network-timeout 600000 -g && \
+    yarn install --production --frozen-lockfile && \
+    yarn cache clean
+
+# Prepare folders + permissions
+RUN mkdir -p /opt/app/be-gx/public/uploads /opt/app/be-gx/.tmp && \
+    chown -R node:node /opt/app/be-gx && \
+    chmod -R 755 /opt/app/be-gx/public/uploads /opt/app/be-gx/.tmp
+
 ENV NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-WORKDIR /opt/
-COPY --from=build /opt/node_modules ./node_modules
-WORKDIR /opt/app
-COPY --from=build /opt/app ./
-ENV PATH=/opt/node_modules/.bin:$PATH
-
-# Tạo thư mục uploads và set quyền TRƯỚC KHI switch user
-RUN mkdir -p /opt/app/public/uploads && \
-    chown -R node:node /opt/app && \
-    chmod -R 755 /opt/app/public/uploads
-
 USER node
+
 EXPOSE 1337
 CMD ["yarn", "start"]
