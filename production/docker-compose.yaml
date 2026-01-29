@@ -3,8 +3,8 @@ services:
     container_name: be-gx
     image: registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:latest
     restart: unless-stopped
-
     env_file: .env
+    
     environment:
       DATABASE_CLIENT: ${DATABASE_CLIENT}
       DATABASE_HOST: db-mysql
@@ -17,19 +17,33 @@ services:
       APP_KEYS: ${APP_KEYS}
       NODE_ENV: ${NODE_ENV}
 
-    # ✅ Production: chỉ mount dữ liệu cần persist (uploads)
     volumes:
       - ./public/uploads:/opt/app/public/uploads
-      # Nếu bạn thật sự muốn override config runtime thì mở dòng này:
-      # - ./config:/opt/app/config
       - ./tmp:/opt/app/.tmp
-
 
     ports:
       - "1337:1337"
-
+    
     networks:
       - springboot-mysql
+
+  fe-gx:
+    container_name: fe-gx
+    image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:latest
+    restart: unless-stopped  # ← Thêm để auto restart
+    
+    environment:
+      # ✅ Không có khoảng trắng
+      NEXT_PUBLIC_STRAPI_API_URL: https://admin-gx.taikhoansieure.vn
+      PORT: 3999
+      HOSTNAME: 0.0.0.0  # ← Khớp với Dockerfile
+    
+    ports:
+      - "3999:3999"  # host:container
+    
+    networks:
+      - springboot-mysql
+  
 
 networks:
   springboot-mysql:

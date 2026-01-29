@@ -30,12 +30,13 @@ services:
       - springboot-mysql
 
 
-  # fe-gx:
-  #   build:
-  #     context: ../fe
-  #     dockerfile: Dockerfile
-  #   image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:latest
-
+  fe-gx:
+    build:
+      context: ../fe
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_STRAPI_API_URL=https://admin-gx.taikhoansieure.vn
+    image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:latest
 
 networks:
   springboot-mysql:
