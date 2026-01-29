@@ -99,8 +99,9 @@ function updateDockerCompose(version) {
 // Main function
 function main() {
   const version = generateVersion();
+  const imageName = `registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:${version}`;
   
-  log('\n=== Building Local Development Version ===', 'cyan');
+  log('\n=== Building & Pushing to Registry ===', 'cyan');
   log(`Version: ${version}`, 'green');
   log(`Platform: ${process.platform}`, 'yellow');
   
@@ -108,34 +109,24 @@ function main() {
   log('\n=== Updating docker-compose.local.yaml ===', 'cyan');
   updateDockerCompose(version);
   
-  // Stop existing container
-  log('\n=== Stopping existing container ===', 'yellow');
-  try {
-    exec('docker-compose -f docker-compose.local.yaml down be-gx', { stdio: 'pipe' });
-  } catch (e) {
-    // Ignore error if container doesn't exist
-  }
-  
   // Build new image
   log('\n=== Building image ===', 'cyan');
   exec('docker-compose -f docker-compose.local.yaml build --no-cache be-gx');
   
-  // Start container
-  log('\n=== Starting container ===', 'cyan');
-  exec('docker-compose -f docker-compose.local.yaml up -d be-gx');
+  // Push to registry
+  log('\n=== Pushing to GitLab Registry ===', 'cyan');
+  exec(`docker push ${imageName}`);
   
   // Show built images
   log('\n=== Images ===', 'cyan');
   exec('docker images registry.gitlab.com/tuanxx31/taikhoansieure/be-gx --format "table {{.Tag}}\\t{{.CreatedAt}}\\t{{.Size}}"');
   
   // Success message
-  log('\n=== Build Complete! ===', 'green');
+  log('\n=== Build & Push Complete! ===', 'green');
   log(`Version: ${version}`, 'green');
-  log('Admin Panel: http://localhost:1337/admin', 'cyan');
-  
-  // Show logs
-  log('\n=== Container Logs (Ctrl+C to exit) ===', 'yellow');
-  exec('docker-compose -f docker-compose.local.yaml logs --tail=50 -f be-gx');
+  log(`Image: ${imageName}`, 'green');
+  log('\nTo pull this image on server:', 'yellow');
+  log(`  docker pull ${imageName}`, 'cyan');
 }
 
 // Run
