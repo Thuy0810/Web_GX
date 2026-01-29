@@ -24,7 +24,11 @@ WORKDIR /opt/app
 COPY --from=build /opt/app ./
 ENV PATH=/opt/node_modules/.bin:$PATH
 
-RUN chown -R node:node /opt/app
+# Tạo thư mục uploads và set quyền TRƯỚC KHI switch user
+RUN mkdir -p /opt/app/public/uploads && \
+    chown -R node:node /opt/app && \
+    chmod -R 755 /opt/app/public/uploads
+
 USER node
 EXPOSE 1337
 CMD ["yarn", "start"]
