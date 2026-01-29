@@ -142,14 +142,20 @@ function buildAndRun(version, imagePath) {
 function buildAndPush(version, imagePath) {
   const serviceName = getServiceName(imagePath);
   const fullImageName = `${imagePath}:${version}`;
+  const latestImageName = `${imagePath}:latest`;
   
   // Build
   log(`\n=== Building ${serviceName} ===`, 'cyan');
   exec(`docker-compose -f docker-compose.local.yaml build --no-cache ${serviceName}`);
   
-  // Push
-  log(`\n=== Pushing ${serviceName} ===`, 'cyan');
+  // Push version tag
+  log(`\n=== Pushing ${serviceName} (${version}) ===`, 'cyan');
   exec(`docker push ${fullImageName}`);
+  
+  // Tag and push latest
+  log(`\n=== Pushing ${serviceName} (latest) ===`, 'cyan');
+  exec(`docker tag ${fullImageName} ${latestImageName}`);
+  exec(`docker push ${latestImageName}`);
   
   return fullImageName;
 }

@@ -40,7 +40,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_STRAPI_API_URL=https://admin-gx.taikhoansieure.vn
-    image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:v1.0.20260129-1733
+    image:  
 
 networks:
   springboot-mysql:
