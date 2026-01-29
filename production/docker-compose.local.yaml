@@ -1,0 +1,44 @@
+# ============================================
+# Local Development Build Configuration
+# Build images locally for testing
+# ============================================
+
+services:
+  be-gx:
+    build:
+      context: ../be
+      dockerfile: Dockerfile
+    image: registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:local
+
+    env_file: .env
+    environment:
+      DATABASE_HOST: db-mysql
+      NODE_ENV: development
+
+    volumes:
+      - ../be/config:/opt/app/config
+      - ../be/src:/opt/app/src
+      - ../be/package.json:/opt/app/package.json
+      - ../be/yarn.lock:/opt/app/yarn.lock
+      - ../be/.env:/opt/app/.env
+      - ../be/public/uploads:/opt/app/public/uploads
+
+    ports:
+      - "1337:1337"
+
+    networks:
+      - springboot-mysql
+
+
+  fe-gx:
+    build:
+      context: ../fe
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_STRAPI_API_URL=https://admin-gx.taikhoansieure.vn
+    image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:latest
+
+networks:
+  springboot-mysql:
+    external: true
+    name: springboot-mysql
