@@ -89,7 +89,7 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body
         suppressHydrationWarning
-        className={`${beVietnamPro.className} antialiased`}
+        className={`${beVietnamPro.className} antialiased pt-[80px] lg:pt-0`}
       >
         <Header />
         {children} 
