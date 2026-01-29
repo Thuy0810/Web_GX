@@ -4,7 +4,7 @@
   "info": {
     "singularName": "contact",
     "pluralName": "contacts",
-    "displayName": "Contact"
+    "displayName": "Thông tin liên hệ"
   },
   "options": {
     "draftAndPublish": true

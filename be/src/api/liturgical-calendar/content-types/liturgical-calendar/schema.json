@@ -4,7 +4,7 @@
   "info": {
     "singularName": "liturgical-calendar",
     "pluralName": "liturgical-calendars",
-    "displayName": "LiturgicalCalendar"
+    "displayName": "Lịch lễ"
   },
   "options": {
     "draftAndPublish": true

@@ -430,40 +430,11 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiAboutAbout extends Struct.SingleTypeSchema {
-  collectionName: 'abouts';
-  info: {
-    description: 'Write about yourself and the content you create';
-    displayName: 'About';
-    pluralName: 'abouts';
-    singularName: 'about';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    blocks: Schema.Attribute.DynamicZone<
-      ['shared.media', 'shared.quote', 'shared.rich-text', 'shared.slider']
-    >;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::about.about'> &
-      Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
-    title: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   collectionName: 'categories';
   info: {
     description: 'Organize your content into categories';
-    displayName: 'Category';
+    displayName: 'Danh m\u1EE5c b\u00E0i vi\u1EBFt';
     pluralName: 'categories';
     singularName: 'category';
   };
@@ -495,7 +466,7 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
 export interface ApiContactContact extends Struct.SingleTypeSchema {
   collectionName: 'contacts';
   info: {
-    displayName: 'Contact';
+    displayName: 'Th\u00F4ng tin li\u00EAn h\u1EC7';
     pluralName: 'contacts';
     singularName: 'contact';
   };
@@ -563,7 +534,7 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
 export interface ApiIntroduceIntroduce extends Struct.SingleTypeSchema {
   collectionName: 'introduces';
   info: {
-    displayName: 'Introduce';
+    displayName: 'Gi\u1EDBi thi\u1EC7u';
     pluralName: 'introduces';
     singularName: 'introduce';
   };
@@ -599,7 +570,7 @@ export interface ApiLiturgicalCalendarLiturgicalCalendar
   extends Struct.CollectionTypeSchema {
   collectionName: 'liturgical_calendars';
   info: {
-    displayName: 'LiturgicalCalendar';
+    displayName: 'L\u1ECBch l\u1EC5';
     pluralName: 'liturgical-calendars';
     singularName: 'liturgical-calendar';
   };
@@ -657,7 +628,7 @@ export interface ApiMenuMenu extends Struct.CollectionTypeSchema {
 export interface ApiPostPost extends Struct.CollectionTypeSchema {
   collectionName: 'posts';
   info: {
-    displayName: 'Post';
+    displayName: 'B\u00E0i vi\u1EBFt';
     pluralName: 'posts';
     singularName: 'post';
   };
@@ -1203,7 +1174,6 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::about.about': ApiAboutAbout;
       'api::category.category': ApiCategoryCategory;
       'api::contact.contact': ApiContactContact;
       'api::global.global': ApiGlobalGlobal;

@@ -4,7 +4,7 @@
   "info": {
     "singularName": "introduce",
     "pluralName": "introduces",
-    "displayName": "Introduce"
+    "displayName": "Giới thiệu"
   },
   "options": {
     "draftAndPublish": true
