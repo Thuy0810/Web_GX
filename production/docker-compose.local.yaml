@@ -37,7 +37,7 @@ services:
       context: ../fe
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_STRAPI_API_URL=https://admin-gx.taikhoansieure.vn
+        - NEXT_PUBLIC_STRAPI_API_URL=https://admin.ghtandinh.site
     image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:v1.0.20260130-1039
 
 networks:
