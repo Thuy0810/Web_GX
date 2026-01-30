@@ -8,13 +8,11 @@ services:
     build:
       context: ../be
       dockerfile: Dockerfile
-    image: registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:v1.0.20260129-1711
-
+    image: registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:v1.0.20260130-0914
     env_file: .env
     environment:
       DATABASE_HOST: db-mysql
       NODE_ENV: production
-
     volumes:
       # - ../be/config:/opt/app/config
       # - ../be/src:/opt/app/src
@@ -40,7 +38,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_STRAPI_API_URL=https://admin-gx.taikhoansieure.vn
-    image:  
+    image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:v1.0.20260129-1734
 
 networks:
   springboot-mysql:
