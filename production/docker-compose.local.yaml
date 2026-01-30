@@ -8,20 +8,24 @@ services:
     build:
       context: ../be
       dockerfile: Dockerfile
-    image: registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:local
+    image: registry.gitlab.com/tuanxx31/taikhoansieure/be-gx:v1.0.20260129-1711
 
     env_file: .env
     environment:
       DATABASE_HOST: db-mysql
-      NODE_ENV: development
+      NODE_ENV: production
 
     volumes:
-      - ../be/config:/opt/app/config
-      - ../be/src:/opt/app/src
-      - ../be/package.json:/opt/app/package.json
-      - ../be/yarn.lock:/opt/app/yarn.lock
-      - ../be/.env:/opt/app/.env
-      - ../be/public/uploads:/opt/app/public/uploads
+      # - ../be/config:/opt/app/config
+      # - ../be/src:/opt/app/src
+      # - ../be/package.json:/opt/app/package.json
+      # - ../be/yarn.lock:/opt/app/yarn.lock
+      # - ../be/.env:/opt/app/.env
+      # - ../be/public/uploads:/opt/app/public/uploads
+            # ✅ persist uploads
+      - ./public/uploads:/opt/app/be-gx/public/uploads
+      # ✅ persist tmp
+      - ./tmp:/opt/app/be-gx/.tmp
 
     ports:
       - "1337:1337"
@@ -36,7 +40,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_STRAPI_API_URL=https://admin-gx.taikhoansieure.vn
-    image: registry.gitlab.com/tuanxx31/taikhoansieure/fe-gx:latest
+    image:  
 
 networks:
   springboot-mysql:

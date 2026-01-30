@@ -48,7 +48,7 @@ export async function MassSchedule() {
         <div className="p-2 rounded-lg bg-primary/10">
           <Church className="h-5 w-5 text-primary" />
         </div>
-        <h3 className="text-lg font-bold text-foreground">LỊCH LỄ TẠI GIÁO XỨ</h3>
+        <h3 className="text-lg font-bold text-foreground">LỊCH LỄ TẠI GIÁO HỌ</h3>
       </div>
 
       <div className="space-y-5">
