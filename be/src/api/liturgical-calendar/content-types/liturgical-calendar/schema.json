@@ -7,7 +7,7 @@
     "displayName": "Lịch lễ"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
