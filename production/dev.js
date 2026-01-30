@@ -129,7 +129,7 @@ function buildAndRun(version, imagePath) {
   
   // Build
   log(`\n=== Building ${serviceName} ===`, 'cyan');
-  exec(`docker-compose -f docker-compose.local.yaml build --no-cache ${serviceName}`);
+  exec(`docker-compose -f docker-compose.local.yaml build ${serviceName}`);
   
   // Start
   log(`\n=== Starting ${serviceName} ===`, 'cyan');
@@ -146,7 +146,7 @@ function buildAndPush(version, imagePath) {
   
   // Build
   log(`\n=== Building ${serviceName} ===`, 'cyan');
-  exec(`docker-compose -f docker-compose.local.yaml build --no-cache ${serviceName}`);
+  exec(`docker-compose -f docker-compose.local.yaml build  ${serviceName}`);
   
   // Push version tag
   log(`\n=== Pushing ${serviceName} (${version}) ===`, 'cyan');
