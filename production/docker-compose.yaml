@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
     environment:
-      NEXT_PUBLIC_STRAPI_API_URL: https://admin-gx.taikhoansieure.vn
+      NEXT_PUBLIC_STRAPI_API_URL: https://admin.ghtandinh.site
       PORT: 3999
       HOSTNAME: 0.0.0.0
 

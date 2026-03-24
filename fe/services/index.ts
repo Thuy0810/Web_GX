@@ -23,7 +23,12 @@ export const fetchGet = async (
 
     try {
         const res = await fetch(fullUrl, {
-            next: { tags: [...tags, "all"] },
+            cache: "no-store", // Tắt cache — luôn lấy dữ liệu mới từ BE
+            // Sau này bật cache: bỏ cache: "no-store", bật block dưới:
+            // next: {
+            //     tags: [...tags, "all"],
+            //     revalidate: 60, // revalidate mỗi 60 giây
+            // },
         });
 
         if (!res.ok) {
