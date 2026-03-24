@@ -1,16 +1,32 @@
 import { Clock, Church } from "lucide-react"
 import liturgicalCalendarService from "@/services/liturgical-calendar.services"
+import globalService from "@/services/global.services"
+
+const DEFAULT_SCHEDULE_TITLE = "LỊCH LỄ TẠI GIÁO HỌ"
 
 export async function MassSchedule() {
-  // Fetch dữ liệu từ API
   let schedules: any[] = []
+  let scheduleTitle = DEFAULT_SCHEDULE_TITLE
   let hasError = false
-  
+
   try {
     const response = await liturgicalCalendarService().getLiturgicalCalendars()
     schedules = response.data || []
   } catch (error: any) {
     hasError = true
+  }
+
+  try {
+    const response = await globalService().getGlobal()
+    const globalData = response?.data ?? response ?? null
+    const title =
+      globalData?.schedule_title ??
+      globalData?.attributes?.schedule_title
+    if (typeof title === "string" && title.trim()) {
+      scheduleTitle = title.trim()
+    }
+  } catch {
+    // Giữ fallback DEFAULT_SCHEDULE_TITLE
   }
 
   // Hàm helper để lấy schedule items từ nhiều định dạng dữ liệu khác nhau
@@ -48,7 +64,7 @@ export async function MassSchedule() {
         <div className="p-2 rounded-lg bg-primary/10">
           <Church className="h-5 w-5 text-primary" />
         </div>
-        <h3 className="text-lg font-bold text-foreground">LỊCH LỄ TẠI GIÁO HỌ</h3>
+        <h3 className="text-lg font-bold text-foreground">{scheduleTitle}</h3>
       </div>
 
       <div className="space-y-5">

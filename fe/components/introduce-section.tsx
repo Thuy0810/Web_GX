@@ -93,7 +93,7 @@ export async function IntroduceSection() {
       {content && (
         <div className="mt-6">
           <Link 
-            href="/menu/gioi-thieu"
+            href="/,/gioi-thieu"
             className="text-primary hover:text-primary/80 text-sm font-medium inline-flex items-center gap-1 transition-colors"
           >
             Xem thêm →

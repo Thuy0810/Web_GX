@@ -79,25 +79,44 @@ export default async function IntroducePage() {
 
     const title = introduceData?.title || "Giới thiệu Giáo xứ"
     let content = introduceData?.content || ""
-
+    
     // Hàm để convert markdown sang HTML và xử lý URL
-    const processContent = (html: string): string => {
-        if (!html) return html
+    const processContent = (raw: string): string => {
+        if (!raw) return raw
         
-        let processed = html
+        const placeholders: string[] = []
+        const protect = (fragment: string) => {
+            const id = placeholders.length
+            placeholders.push(fragment)
+            return `\uE000MD${id}\uE000`
+        }
         
-        // QUAN TRỌNG: Xử lý images TRƯỚC các markdown khác để tránh conflict
+        // Bảo vệ URL/khối có dấu _ trong tên file: regex _italic_ không được chạy lên src hay ![](url)
+        let processed = raw
+        processed = processed.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (m) => protect(m))
+        processed = processed.replace(/<img\b[^>]*>/gi, (m) => protect(m))
+        processed = processed.replace(/(?!!)\[([^\]]+)\]\(([^)]+)\)/g, (m) => protect(m))
+        
+        // Convert markdown bold **text** hoặc __text__ thành <strong>text</strong>
+        processed = processed.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        processed = processed.replace(/__([^_]+)__/g, '<strong>$1</strong>')
+        
+        // Convert markdown italic *text* hoặc _text_ thành <em>text</em>
+        processed = processed.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
+        processed = processed.replace(/(?<!_)_([^_\n]+)_(?!_)/g, '<em>$1</em>')
+        
+        placeholders.forEach((original, i) => {
+            processed = processed.split(`\uE000MD${i}\uE000`).join(original)
+        })
+        
         // Convert markdown image syntax ![alt](url) thành HTML <img> tag
         processed = processed.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, url) => {
-            // Xử lý URL - nếu là localhost, thay bằng baseUrl từ env
             let imageUrl = url.trim()
             
-            // Nếu URL chứa localhost:1337, thay bằng baseUrl
             if (imageUrl.includes('localhost:1337')) {
                 imageUrl = imageUrl.replace(/https?:\/\/localhost:1337/g, baseUrl || 'http://localhost:1337')
             }
             
-            // Nếu URL là relative path và chưa có baseUrl, thêm baseUrl
             if (!imageUrl.startsWith('http') && !imageUrl.startsWith('//') && !imageUrl.startsWith('data:')) {
                 imageUrl = imageUrl.startsWith('/') 
                     ? `${baseUrl}${imageUrl}` 
@@ -107,15 +126,12 @@ export default async function IntroducePage() {
             return `<img src="${imageUrl}" alt="${alt || ''}" class="mx-auto block rounded-lg max-w-full h-auto" />`
         })
         
-        // Xử lý các thẻ <img> có sẵn trong HTML (nếu có)
         processed = processed.replace(/<img([^>]*?)src=["']([^"']+)["']([^>]*?)>/gi, (match, before, src, after) => {
-            // Nếu src chứa localhost:1337, thay bằng baseUrl
             if (src.includes('localhost:1337')) {
                 const newSrc = src.replace(/https?:\/\/localhost:1337/g, baseUrl || 'http://localhost:1337')
                 return `<img${before}src="${newSrc}"${after}>`
             }
             
-            // Nếu là relative path, thêm baseUrl
             if (!src.startsWith('http') && !src.startsWith('//') && !src.startsWith('data:')) {
                 const newSrc = src.startsWith('/') 
                     ? `${baseUrl}${src}` 
@@ -125,16 +141,6 @@ export default async function IntroducePage() {
             
             return match
         })
-        
-        // Sau đó mới xử lý các markdown formatting khác
-        // Convert markdown bold **text** hoặc __text__ thành <strong>text</strong>
-        processed = processed.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-        processed = processed.replace(/__([^_]+)__/g, '<strong>$1</strong>')
-        
-        // Convert markdown italic *text* hoặc _text_ thành <em>text</em>
-        // Chỉ convert single asterisk/underscore (không phải double)
-        processed = processed.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
-        processed = processed.replace(/(?<!_)_([^_\n]+)_(?!_)/g, '<em>$1</em>')
         
         // Convert markdown headings # Heading thành <h1>Heading</h1>
         processed = processed.replace(/^### (.*$)/gim, '<h3>$1</h3>')

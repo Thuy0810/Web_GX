@@ -37,6 +37,9 @@
     },
     "diocese": {
       "type": "string"
+    },
+    "schedule_title": {
+      "type": "string"
     }
   }
 }
