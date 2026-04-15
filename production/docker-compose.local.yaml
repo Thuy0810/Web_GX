@@ -29,7 +29,7 @@ services:
       - "1337:1337"
 
     networks:
-      - springboot-mysql
+      - shared-network
 
 
   fe-gx:
@@ -42,6 +42,5 @@ services:
 
 
 networks:
-  springboot-mysql:
+  shared-network:
     external: true
-    name: springboot-mysql
